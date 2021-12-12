@@ -45,10 +45,11 @@ function clipNodes(nodes, A, B, C, opts) {
   var mode = modes[opts.mode]
   var get = opts.get || getPoint
   var la = A.length, lb = B.length
-  var results = []
+  var coordinates = []
+  var rings = []
   var fwd = true
   while (true) {
-    var current = []
+    var ring = []
     for (var index = 0; index < nodes.length; index++) {
       if (nodes[index].intersect && !nodes[index].visited) break
     }
@@ -58,9 +59,9 @@ function clipNodes(nodes, A, B, C, opts) {
       if (nodes[index].visited) break
       nodes[index].visited = true
       if (index < la+lb) {
-        current.push(get(A,B,C,index))
+        ring.push(get(A,B,C,index))
       } else {
-        current.push(get(A,B,C,la+lb+Math.floor((index-la-lb)/2)))
+        ring.push(get(A,B,C,la+lb+Math.floor((index-la-lb)/2)))
       }
       if (nodes[index].intersect) {
         if (mode === INTERSECT) {
@@ -80,13 +81,19 @@ function clipNodes(nodes, A, B, C, opts) {
         index = nodes[index].prev
       }
       if (start === index) {
-        if (current.length > 0) results.push(current)
+        if (ring.length > 0) {
+          rings.push(ring)
+          coordinates.push(rings)
+          rings = []
+          ring = []
+        }
         break
       }
     }
     fwd = !fwd
   }
-  return results
+  if (rings.length > 0) coordinates.push(rings)
+  return coordinates
 }
 
 function getPoint(A,B,C,i) {
