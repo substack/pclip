@@ -1,29 +1,50 @@
-// https://davis.wpi.edu/~matt/courses/clipping/
-
-var intersect = require('intersect-great-circle')
-var pointInPolygon = require('geo-point-in-polygon')
 var calcNodes = require('./lib/nodes.js')
+
+var mopts = { mode: 0 }
 var INTERSECT = 0, XOR = 1, UNION = 2, DIFFERENCE = 3
-
-exports.intersect = function intersect(A, B) {
-  return clip(A, B, INTERSECT)
-}
-exports.xor = function xor(A, B) {
-  return clip(A, B, XOR)
-}
-exports.union = function union(A, B) {
-  return clip(A, B, UNION)
-}
-exports.difference = function difference(A, B) {
-  return clip(A, B, DIFFERENCE)
+var modes = {
+  intersect: INTERSECT,
+  xor: XOR,
+  union: UNION,
+  difference: DIFFERENCE
 }
 
-function clip(A, B, mode) {
-  var nodes = Array(A.length+B.length)
-  var npoints = []
-  calcNodes(nodes, npoints, A, B)
+module.exports = clip
+module.exports.calcNodes = calcNodes
 
-  // phase three:
+module.exports.intersect = function intersect(A, B, opts) {
+  if (!opts) opts = mopts
+  opts.mode = 'intersect'
+  return clip(A, B, opts)
+}
+module.exports.xor = function xor(A, B, opts) {
+  if (!opts) opts = mopts
+  opts.mode = 'xor'
+  return clip(A, B, opts)
+}
+module.exports.union = function union(A, B, opts) {
+  if (!opts) opts = mopts
+  opts.mode = 'union'
+  return clip(A, B, opts)
+}
+module.exports.difference = function difference(A, B, opts) {
+  if (!opts) opts = mopts
+  opts.mode = 'difference'
+  return clip(A, B, opts)
+}
+
+function clip(A, B, opts) {
+  var npoints = (opts && opts.npoints) || []
+  var nodes = (opts && opts.nodes) || Array(A.length+B.length)
+  calcNodes(nodes, npoints, A, B, opts)
+  return clipNodes(nodes, A, B, npoints, opts)
+}
+
+exports.clipNodes = clipNodes
+function clipNodes(nodes, A, B, C, opts) {
+  var mode = modes[opts.mode]
+  var get = opts.get || getPoint
+  var la = A.length, lb = B.length
   var results = []
   var fwd = true
   while (true) {
@@ -36,7 +57,11 @@ function clip(A, B, mode) {
     while (true) {
       if (nodes[index].visited) break
       nodes[index].visited = true
-      current.push(index)
+      if (index < la+lb) {
+        current.push(get(A,B,C,index))
+      } else {
+        current.push(get(A,B,C,la+lb+Math.floor((index-la-lb)/2)))
+      }
       if (nodes[index].intersect) {
         if (mode === INTERSECT) {
           fwd = !nodes[index].entry
@@ -63,3 +88,11 @@ function clip(A, B, mode) {
   }
   return results
 }
+
+function getPoint(A,B,C,i) {
+  var la = A.length, lb = B.length
+  if (i < la) return A[i]
+  if (i < la+lb) return B[i-la]
+  return C[i-la-lb]
+}
+function getIndex(A,B,C,i) { return i }
