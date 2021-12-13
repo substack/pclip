@@ -10,5 +10,8 @@
     "line-segment-intersect-2d": "^1.0.0",
     "point-in-polygon": "^1.1.0",
     "tape": "^5.3.2"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
   }
 }

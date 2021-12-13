@@ -1,18 +1,10 @@
 var calcNodes = require('./lib/nodes.js')
-
 var mopts = { mode: 0 }
-var INTERSECT = 0, XOR = 1, UNION = 2, DIFFERENCE = 3
-var modes = {
-  intersect: INTERSECT,
-  xor: XOR,
-  union: UNION,
-  difference: DIFFERENCE
-}
 
 module.exports = clip
 module.exports.calcNodes = calcNodes
 
-module.exports.intersect = function intersect(A, B, opts) {
+module.exports.intersect = module.exports.and = function intersect(A, B, opts) {
   if (!opts) opts = mopts
   opts.mode = 'intersect'
   return clip(A, B, opts)
@@ -22,7 +14,7 @@ module.exports.xor = function xor(A, B, opts) {
   opts.mode = 'xor'
   return clip(A, B, opts)
 }
-module.exports.union = function union(A, B, opts) {
+module.exports.union = module.exports.or = function union(A, B, opts) {
   if (!opts) opts = mopts
   opts.mode = 'union'
   return clip(A, B, opts)
@@ -40,59 +32,74 @@ function clip(A, B, opts) {
   return clipNodes(nodes, A, B, npoints, opts)
 }
 
+function firstNodeOfInterest(nodes, start) {
+  var i = start, n = nodes[i];
+  do {
+    i = n.next;
+    n = nodes[i];
+  } while (i < nodes.length && i !== start && (!n.intersect || (n.intersect && n.visited)));
+  return i
+}
+
 exports.clipNodes = clipNodes
 function clipNodes(nodes, A, B, C, opts) {
-  var mode = modes[opts.mode]
   var get = opts.get || getPoint
+  var mode = opts.mode
   var la = A.length, lb = B.length
   var coordinates = []
   var rings = []
-  var fwd = true
-  while (true) {
+
+  var start = mode === 'union' ? la : 0
+  while ((index = firstNodeOfInterest(nodes, start)) !== start) {
+    var n = nodes[index]
     var ring = []
-    for (var index = 0; index < nodes.length; index++) {
-      if (nodes[index].intersect && !nodes[index].visited) break
-    }
-    if (index >= nodes.length) break
-    var start = index
-    while (true) {
-      if (nodes[index].visited) break
-      nodes[index].visited = true
-      if (index < la+lb) {
-        ring.push(get(A,B,C,index))
-      } else {
-        ring.push(get(A,B,C,la+lb+Math.floor((index-la-lb)/2)))
-      }
-      if (nodes[index].intersect) {
-        if (mode === INTERSECT) {
-          fwd = !nodes[index].entry
-        } else if (mode === XOR) {
-          fwd = !fwd
-        } else if (mode === UNION) {
-          fwd = fwd === nodes[index].entry
-        } else if (mode === DIFFERENCE) {
-          fwd = fwd !== nodes[index].entry
+    for (; !n.visited; index = n.neighbor, n = nodes[index]) {
+      ring.push(get(A,B,C,index))
+      var fwd = n.entry
+      while (true) {
+        n.visited = true
+        index = fwd ? n.next : n.prev
+        n = nodes[index]
+        if (n.intersect) {
+          n.visited = true
+          break
+        } else {
+          ring.push(get(A,B,C,index))
         }
-        index = nodes[index].neighbor
-      }
-      if (fwd) {
-        index = nodes[index].next
-      } else {
-        index = nodes[index].prev
-      }
-      if (start === index) {
-        if (ring.length > 0) {
-          rings.push(ring)
-          coordinates.push(rings)
-          rings = []
-          ring = []
-        }
-        break
       }
     }
-    fwd = !fwd
+    rings.push(ring)
   }
-  if (rings.length > 0) coordinates.push(rings)
+  coordinates.push(rings)
+
+  if (mode === 'xor') {
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].visited = false
+      if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
+    }
+    rings = []
+    while ((index = firstNodeOfInterest(nodes, la)) !== la) {
+      var n = nodes[index]
+      var ring = []
+      for (; !n.visited; index = n.neighbor, n = nodes[index]) {
+        ring.push(get(A,B,C,index))
+        var fwd = n.entry
+        while (true) {
+          n.visited = true
+          index = fwd ? n.next : n.prev
+          n = nodes[index]
+          if (n.intersect) {
+            n.visited = true
+            break
+          } else {
+            ring.push(get(A,B,C,index))
+          }
+        }
+      }
+      rings.push(ring)
+    }
+    coordinates.push(rings)
+  }
   return coordinates
 }
 
@@ -100,6 +107,6 @@ function getPoint(A,B,C,i) {
   var la = A.length, lb = B.length
   if (i < la) return A[i]
   if (i < la+lb) return B[i-la]
-  return C[i-la-lb]
+  return C[Math.floor((i-la-lb)/2)]
 }
 function getIndex(A,B,C,i) { return i }

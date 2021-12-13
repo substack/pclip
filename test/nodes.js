@@ -63,7 +63,7 @@ test('nodes', function (t) {
     }, 'nodes[5]')
     t.deepEqual(fields(nodes[6]), {
       intersect: true,
-      entry: true,
+      entry: false,
       next: 8,
       prev: 1,
       neighbor: 7
@@ -77,7 +77,7 @@ test('nodes', function (t) {
     }, 'nodes[7]')
     t.deepEqual(fields(nodes[8]), {
       intersect: true,
-      entry: false,
+      entry: true,
       next: 2,
       prev: 6,
       neighbor: 9

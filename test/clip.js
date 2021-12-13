@@ -10,17 +10,17 @@ test('two triangles cartesian clip', function (t) {
     distance: require('gl-vec2/distance'),
   }
   t.deepEqual(pclip.intersect(A,B,opts), [
-    [ [ [ 6.25, 6 ], [ 5, 4 ], [ 7.5, 4 ] ] ],
+    [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ], 'intersect')
   t.deepEqual(pclip.xor(A,B,opts), [
-    [ [ [ 6.25, 6 ], [ 5, 4 ], [ 7.5, 4 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
-    [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 10, 4 ], [ 10, 12 ] ] ],
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+    [ [ [ 6.25, 6 ], [ 10, 12 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
   ], 'xor')
   t.deepEqual(pclip.union(A,B,opts), [
     [ [ [ 6.25, 6 ], [ 10, 12 ], [ 10, 4 ], [ 7.5, 4 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
   ], 'union')
   t.deepEqual(pclip.difference(A,B,opts), [
-    [ [ [ 6.25, 6 ], [ 5, 4 ], [ 7.5, 4 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ], 'difference')
   t.end()
 })
@@ -35,17 +35,17 @@ test('two triangles geodetic clip', function (t) {
   }
   var n = 3
   t.deepEqual(round(n,pclip.intersect(A,B,opts)), [
-    [ [ [ 6.246, 6.026 ], [ 5, 4 ], [ 7.512, 4.004 ] ] ],
+    [ [ [ 6.246, 6.026 ], [ 7.512, 4.004 ], [ 5, 4 ] ] ],
   ], 'intersect')
   t.deepEqual(round(n,pclip.xor(A,B,opts)), [
-    [ [ [ 6.246, 6.026 ], [ 5, 4 ], [ 7.512, 4.004 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
-    [ [ [ 6.246, 6.026 ], [ 7.512, 4.004 ], [ 10, 4 ], [ 10, 12 ] ] ],
+    [ [ [ 6.246, 6.026 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.512, 4.004 ], [ 5, 4 ] ] ],
+    [ [ [ 6.246, 6.026 ], [ 10, 12 ], [ 10, 4 ], [ 7.512, 4.004 ] ] ],
   ], 'xor')
   t.deepEqual(round(n,pclip.union(A,B,opts)), [
     [ [ [ 6.246, 6.026 ], [ 10, 12 ], [ 10, 4 ], [ 7.512, 4.004 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
   ], 'union')
   t.deepEqual(round(n,pclip.difference(A,B,opts)), [
-    [ [ [ 6.246, 6.026 ], [ 5, 4 ], [ 7.512, 4.004 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
+    [ [ [ 6.246, 6.026 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.512, 4.004 ], [ 5, 4 ] ] ],
   ], 'difference')
   t.end()
 })
@@ -58,42 +58,27 @@ test('cartesian', function (t) {
     [5,4],[10,12],[15,-2],[7,-2],[10,4]
   ]
   var opts = {
-    intersect: require('intersect-great-circle'),
-    pointInPolygon: require('geo-point-in-polygon'),
-    distance: require('haversine-distance'),
+    intersect: require('line-segment-intersect-2d'),
+    pointInPolygon: require('point-in-polygon'),
+    distance: require('gl-vec2/distance'),
   }
   var n = 3
   t.deepEqual(round(n,pclip.intersect(A,B,opts)), [
-    [ [ [ 6.25, 6 ], [ 5, 4 ], [ 7.5, 4 ] ] ],
-    [ [ [ 8.889, 1.778 ], [ 8, 0 ], [ 10, 0 ] ] ],
+    [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ], [ [ 8.889, 1.778 ], [ 10, 0 ], [ 8, 0 ] ] ],
   ], 'intersect')
-  /*
   t.deepEqual(round(n,pclip.xor(A,B,opts)), [
-    [
-      [ 6.25, 6 ],
-      [ 5, 4 ],
-      [ 7.5, 4 ],
-      [ 8.88888888888889, 1.7777777777777777 ],
-      [ 8, 0 ],
-      [ 0, 0 ],
-      [ 5, 8 ]
-    ]
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+    [ [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 10, 0 ],
+      [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
   ], 'xor')
   t.deepEqual(round(n,pclip.union(A,B,opts)), [
-  ], 'union')
-  */
-  t.deepEqual(round(n,pclip.difference(A,B,opts)), [
     [
-      [
-        [ 6.25, 6 ],
-        [ 5, 4 ],
-        [ 7.5, 4 ],
-        [ 8.889, 1.778 ],
-        [ 8, 0 ],
-        [ 0, 0 ],
-        [ 5, 8 ]
-      ],
+      [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 0, 0 ], [ 5, 8 ] ],
+      [ [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ],
     ],
+  ], 'union')
+  t.deepEqual(round(n,pclip.difference(A,B,opts)), [
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ], 'difference')
   t.end()
 })
