@@ -1,5 +1,5 @@
 var test = require('tape')
-var pclip = require('../polygon')
+var pclip = require('../')
 
 test('two triangles cartesian clip', function (t) {
   var A = [[0,0],[5,8],[10,0]]

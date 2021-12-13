@@ -1,10 +1,11 @@
+// https://davis.wpi.edu/~matt/courses/clipping/
+
 var calcNodes = require('./lib/nodes.js')
 var mopts = { mode: 0 }
 
 module.exports = clip
-module.exports.calcNodes = calcNodes
 
-module.exports.intersect = module.exports.and = function intersect(A, B, opts) {
+module.exports.intersect = function intersect(A, B, opts) {
   if (!opts) opts = mopts
   opts.mode = 'intersect'
   return clip(A, B, opts)
@@ -14,7 +15,7 @@ module.exports.xor = function xor(A, B, opts) {
   opts.mode = 'xor'
   return clip(A, B, opts)
 }
-module.exports.union = module.exports.or = function union(A, B, opts) {
+module.exports.union = function union(A, B, opts) {
   if (!opts) opts = mopts
   opts.mode = 'union'
   return clip(A, B, opts)
@@ -41,7 +42,6 @@ function firstNodeOfInterest(nodes, start) {
   return i
 }
 
-exports.clipNodes = clipNodes
 function clipNodes(nodes, A, B, C, opts) {
   var get = opts.get || getPoint
   var mode = opts.mode

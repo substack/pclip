@@ -1,4 +1,4 @@
-var pclip = require('../polygon')
+var pclip = require('../')
 var A = [[0,0],[5,8],[10,0]]
 var B = [[5,4],[10,12],[10,4]]
 var opts = {
@@ -6,7 +6,11 @@ var opts = {
   pointInPolygon: require('geo-point-in-polygon'),
   distance: require('haversine-distance'),
 }
-console.log('intersect', pclip.intersect(A,B,opts))
-console.log('xor', pclip.xor(A,B,opts))
-console.log('union', pclip.union(A,B,opts))
-console.log('difference', pclip.difference(A,B,opts))
+console.log('intersect', show(pclip.intersect(A,B,opts)))
+console.log('xor', show(pclip.xor(A,B,opts)))
+console.log('union', show(pclip.union(A,B,opts)))
+console.log('difference', show(pclip.difference(A,B,opts)))
+
+function show(cs) {
+  return '[\n' + cs.map(rings => '  ' + JSON.stringify(rings)).join(',\n') + '\n]'
+}
