@@ -50,6 +50,70 @@ test('two triangles geodetic clip', function (t) {
   t.end()
 })
 
+test('one triangle completely inside of another', function (t) {
+  var A = [[0,0],[5,8],[10,0]]
+  var B = [[1,1],[2,2],[3,1]]
+  var opts = {
+    intersect: require('line-segment-intersect-2d'),
+    pointInPolygon: require('point-in-polygon'),
+    distance: require('gl-vec2/distance'),
+  }
+  var n = 3
+  t.deepEqual(round(n,pclip.intersect(A,B,opts)), [
+    [[[1,1],[2,2],[3,1]]],
+  ], 'intersect')
+  t.deepEqual(round(n,pclip.xor(A,B,opts)), [
+    [
+      [[0,0],[5,8],[10,0]],
+      [[1,1],[2,2],[3,1]],
+    ],
+  ], 'xor')
+  t.deepEqual(round(n,pclip.union(A,B,opts)), [
+    [[[0,0],[5,8],[10,0]]]
+  ], 'union')
+  t.deepEqual(round(n,pclip.difference(A,B,opts)), [
+    [
+      [[0,0],[5,8],[10,0]],
+      [[1,1],[2,2],[3,1]],
+    ],
+  ], 'difference')
+  t.end()
+})
+
+test('subject triangle with hole, clip triangle with hole not clipped', function (t) {
+  var A = [
+    [[0,0],[5,8],[10,0]],
+    [[1,1],[2,2],[3,1]],
+  ]
+  var B = [[5,4],[10,12],[10,4]]
+  var opts = {
+    intersect: require('line-segment-intersect-2d'),
+    pointInPolygon: require('point-in-polygon'),
+    distance: require('gl-vec2/distance'),
+  }
+  /*
+  t.deepEqual(pclip.intersect(A,B,opts), [
+    [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+  ], 'intersect')
+  t.deepEqual(pclip.xor(A,B,opts), [
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+    [ [ [ 6.25, 6 ], [ 10, 12 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
+  ], 'xor')
+  */
+  t.deepEqual(pclip.union(A,B,opts), [
+    [
+      [[6.25,6],[10,12],[10,4],[7.5,4],[10,0],[0,0],[5,8]],
+      [[1,1],[2,2],[3,1]],
+    ],
+  ], 'union')
+  /*
+  t.deepEqual(pclip.difference(A,B,opts), [
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+  ], 'difference')
+  */
+  t.end()
+})
+
 test('cartesian scenario 1', function (t) {
   var A = [
     [0,0],[5,8],[10,0]
@@ -102,7 +166,7 @@ test('cartesian scenario 2 with holes', function (t) {
     pointInPolygon: require('point-in-polygon'),
     distance: require('gl-vec2/distance'),
   }
-  console.log(pclip.union(A,B,opts))
+  console.dir(pclip.union(A,B,opts), { depth: 100 })
   /*
   var n = 3
   t.deepEqual(round(n,pclip.intersect(A,B,opts)), [

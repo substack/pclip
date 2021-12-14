@@ -2,6 +2,7 @@
 
 var calcNodes = require('./lib/nodes.js')
 var mopts = { mode: 0 }
+var out = { npoints: [], nodes: [], la: 0, lb: 0 }
 
 module.exports = clip
 
@@ -27,9 +28,8 @@ module.exports.difference = function difference(A, B, opts) {
 }
 
 function clip(A, B, opts) {
-  var npoints = []
-  var nodes = calcNodes(npoints, A, B, opts)
-  return clipNodes(nodes, A, B, npoints, opts)
+  calcNodes(out, A, B, opts)
+  return clipNodes(out, A, B, opts)
 }
 
 function firstNodeOfInterest(nodes, start) {
@@ -41,10 +41,63 @@ function firstNodeOfInterest(nodes, start) {
   return i
 }
 
-function clipNodes(nodes, A, B, C, opts) {
+function clipNodes(out, A, B, opts) {
+  var nodes = out.nodes, C = out.npoints
   var get = opts.get || getPoint
   var mode = opts.mode
-  var la = A.length, lb = B.length
+  var la = out.la, lb = out.lb
+  var pointInPolygon = opts.pointInPolygon
+
+  if (C.length === 0 && mode === 'intersect' && out.dB === 2) {
+    if (pointInPolygon(nodes[0].point, B)) { // A inside B
+      return [[A]]
+    } else if (out.dA === 2) { // B inside A
+      return [[B]]
+    } else if (out.dA === 3) { // B inside A
+      return [B]
+    } else if (out.dA === 4) { // B inside A
+      return B
+    }
+  } else if (C.length === 0 && mode === 'intersect' && out.dB === 3) {
+    throw new Error('todo')
+  } else if (C.length === 0 && mode === 'intersect' && out.dB === 4) {
+    throw new Error('todo')
+  }
+
+  if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 2) {
+    if (pointInPolygon(nodes[0].point, B)) { // A inside B
+      return [[B,A]]
+    } else if (out.dA === 2) { // B inside A
+      return [[A,B]]
+    } else if (out.dA === 3) { // B inside A
+      return [A.concat(B)]
+    } else if (out.dA === 4) { // B inside A
+      var r = A.slice()
+      r[0] = r[0].concat(B)
+      return r
+    }
+  } else if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 3) {
+    throw new Error('todo')
+  } else if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 4) {
+    throw new Error('todo')
+  }
+
+  if (C.length === 0 && mode === 'union' && out.dB === 2) {
+    if (pointInPolygon(nodes[0].point, B)) { // A inside B
+      return [[B]]
+    } else if (out.dA === 2) { // B inside A
+      return [[A]]
+    } else if (out.dA === 3) { // B inside A
+      return [A]
+    } else if (out.dA === 4) { // B inside A
+      return A
+    }
+  } else if (C.length === 0 && mode === 'union' && out.dB === 3) {
+    throw new Error('todo')
+  } else if (C.length === 0 && mode === 'union' && out.dB === 4) {
+    throw new Error('todo')
+  }
+
   var coordinates = []
   var rings = []
 
@@ -105,4 +158,3 @@ function clipNodes(nodes, A, B, C, opts) {
 function getPoint(nodes,i) {
   return nodes[i].point
 }
-function getIndex(A,B,C,i) { return i }

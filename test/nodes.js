@@ -18,71 +18,75 @@ test('nodes', function (t) {
   ]
   optList.forEach(function (opts) {
     var npoints = [], nodes = Array(A.length+B.length)
-    var nodes = calcNodes(npoints, A, B, opts)
-    t.deepEqual(fields(nodes[0]), {
+    var out = {
+      nodes: [],
+      npoints: [],
+    }
+    calcNodes(out, A, B, opts)
+    t.deepEqual(fields(out.nodes[0]), {
       intersect: false,
       entry: false,
       next: 1,
       prev: 2,
       neighbor: -1
     }, 'nodes[0]')
-    t.deepEqual(fields(nodes[1]), {
+    t.deepEqual(fields(out.nodes[1]), {
       intersect: false,
       entry: false,
       next: 6,
       prev: 0,
       neighbor: -1
     }, 'nodes[1]')
-    t.deepEqual(fields(nodes[2]), {
+    t.deepEqual(fields(out.nodes[2]), {
       intersect: false,
       entry: false,
       next: 0,
       prev: 8,
       neighbor: -1
     }, 'nodes[2]')
-    t.deepEqual(fields(nodes[3]), {
+    t.deepEqual(fields(out.nodes[3]), {
       intersect: false,
       entry: false,
       next: 7,
       prev: 9,
       neighbor: -1
     }, 'nodes[3]')
-    t.deepEqual(fields(nodes[4]), {
+    t.deepEqual(fields(out.nodes[4]), {
       intersect: false,
       entry: false,
       next: 5,
       prev: 7,
       neighbor: -1
     }, 'nodes[4]')
-    t.deepEqual(fields(nodes[5]), {
+    t.deepEqual(fields(out.nodes[5]), {
       intersect: false,
       entry: false,
       next: 9,
       prev: 4,
       neighbor: -1
     }, 'nodes[5]')
-    t.deepEqual(fields(nodes[6]), {
+    t.deepEqual(fields(out.nodes[6]), {
       intersect: true,
       entry: false,
       next: 8,
       prev: 1,
       neighbor: 7
     }, 'nodes[6]')
-    t.deepEqual(fields(nodes[7]), {
+    t.deepEqual(fields(out.nodes[7]), {
       intersect: true,
       entry: false,
       next: 4,
       prev: 3,
       neighbor: 6
     }, 'nodes[7]')
-    t.deepEqual(fields(nodes[8]), {
+    t.deepEqual(fields(out.nodes[8]), {
       intersect: true,
       entry: true,
       next: 2,
       prev: 6,
       neighbor: 9
     }, 'nodes[8]')
-    t.deepEqual(fields(nodes[9]), {
+    t.deepEqual(fields(out.nodes[9]), {
       intersect: true,
       entry: true,
       next: 3,
