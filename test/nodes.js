@@ -18,7 +18,7 @@ test('nodes', function (t) {
   ]
   optList.forEach(function (opts) {
     var npoints = [], nodes = Array(A.length+B.length)
-    calcNodes(nodes, npoints, A, B, opts)
+    var nodes = calcNodes(npoints, A, B, opts)
     t.deepEqual(fields(nodes[0]), {
       intersect: false,
       entry: false,

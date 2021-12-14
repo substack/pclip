@@ -54,10 +54,9 @@ You must provide:
 
 and you can optionally provide:
 
-* `opts.get(A,B,C,i)` - map a node index to input polygons `A`, `B`, and set of intersections `C`.
-  indexes map to `A`, then `B`, then `C` and indexes in `i` are doubled-up.
-  this hook lets you include the internal node index so you can determine if an edge is from the
-  original polygon or from the polygon clipping.
+* `opts.get(nodes,i)` - map the array of nodes and the node inex to the result type.
+  by default, this is `nodes[i].point` but you can supply extra information here such as the index
+  to determine if for example an edge is from the original polygon or a result of clipping.
 
 ### cartesian coordinate options
 

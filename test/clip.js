@@ -50,7 +50,7 @@ test('two triangles geodetic clip', function (t) {
   t.end()
 })
 
-test('cartesian', function (t) {
+test('cartesian scenario 1', function (t) {
   var A = [
     [0,0],[5,8],[10,0]
   ]
@@ -82,6 +82,50 @@ test('cartesian', function (t) {
   ], 'difference')
   t.end()
 })
+
+test('cartesian scenario 2 with holes', function (t) {
+  var A = [
+    [
+      [[-5,-1],[+0,+4],[+1,+1],[+3,+1],[+3,-1],[+0,-1],[+0,-2],[-4,-2]],
+      [[-3,+0],[-1,+2],[+1,+0]],
+    ]
+  ]
+  var B = [
+    [
+      [[-2,+3],[+1,+3],[+1,+5],[+4,+5],[+4,+2],[+2,+2],[+2,-2],[+0,-3],[-2,-1]],
+      [[-0.5,+0.5],[+1.5,+0.5],[+1,-2]],
+      [[+2,+4],[+3,+4],[+3,+3],[+2,+3]],
+    ],
+  ]
+  var opts = {
+    intersect: require('line-segment-intersect-2d'),
+    pointInPolygon: require('point-in-polygon'),
+    distance: require('gl-vec2/distance'),
+  }
+  console.log(pclip.union(A,B,opts))
+  /*
+  var n = 3
+  t.deepEqual(round(n,pclip.intersect(A,B,opts)), [
+    [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ], [ [ 8.889, 1.778 ], [ 10, 0 ], [ 8, 0 ] ] ],
+  ], 'intersect')
+  t.deepEqual(round(n,pclip.xor(A,B,opts)), [
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+    [ [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 10, 0 ],
+      [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
+  ], 'xor')
+  t.deepEqual(round(n,pclip.union(A,B,opts)), [
+    [
+      [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 0, 0 ], [ 5, 8 ] ],
+      [ [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ],
+    ],
+  ], 'union')
+  t.deepEqual(round(n,pclip.difference(A,B,opts)), [
+    [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
+  ], 'difference')
+  */
+  t.end()
+})
+
 
 function round(n,xxxs) {
   return xxxs.map(function (xxs) {

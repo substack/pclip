@@ -27,9 +27,8 @@ module.exports.difference = function difference(A, B, opts) {
 }
 
 function clip(A, B, opts) {
-  var npoints = (opts && opts.npoints) || []
-  var nodes = (opts && opts.nodes) || Array(A.length+B.length)
-  calcNodes(nodes, npoints, A, B, opts)
+  var npoints = []
+  var nodes = calcNodes(npoints, A, B, opts)
   return clipNodes(nodes, A, B, npoints, opts)
 }
 
@@ -54,7 +53,7 @@ function clipNodes(nodes, A, B, C, opts) {
     var n = nodes[index]
     var ring = []
     for (; !n.visited; index = n.neighbor, n = nodes[index]) {
-      ring.push(get(A,B,C,index))
+      ring.push(get(nodes,index))
       var fwd = n.entry
       while (true) {
         n.visited = true
@@ -64,7 +63,7 @@ function clipNodes(nodes, A, B, C, opts) {
           n.visited = true
           break
         } else {
-          ring.push(get(A,B,C,index))
+          ring.push(get(nodes,index))
         }
       }
     }
@@ -82,7 +81,7 @@ function clipNodes(nodes, A, B, C, opts) {
       var n = nodes[index]
       var ring = []
       for (; !n.visited; index = n.neighbor, n = nodes[index]) {
-        ring.push(get(A,B,C,index))
+        ring.push(get(nodes,index))
         var fwd = n.entry
         while (true) {
           n.visited = true
@@ -92,7 +91,7 @@ function clipNodes(nodes, A, B, C, opts) {
             n.visited = true
             break
           } else {
-            ring.push(get(A,B,C,index))
+            ring.push(get(nodes,index))
           }
         }
       }
@@ -103,10 +102,7 @@ function clipNodes(nodes, A, B, C, opts) {
   return coordinates
 }
 
-function getPoint(A,B,C,i) {
-  var la = A.length, lb = B.length
-  if (i < la) return A[i]
-  if (i < la+lb) return B[i-la]
-  return C[Math.floor((i-la-lb)/2)]
+function getPoint(nodes,i) {
+  return nodes[i].point
 }
 function getIndex(A,B,C,i) { return i }
