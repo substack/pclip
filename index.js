@@ -33,11 +33,20 @@ function clip(A, B, opts) {
 }
 
 function firstNodeOfInterest(nodes, start) {
-  var i = start, n = nodes[i];
-  do {
-    i = n.next;
-    n = nodes[i];
-  } while (i < nodes.length && i !== start && (!n.intersect || (n.intersect && n.visited)));
+  var i = start, pstart = start, n = nodes[i]
+  while (true) {
+    if (!(!n.intersect || (n.intersect && n.visited))) {
+      break
+    }
+    i = n.next
+    n = nodes[i]
+    if (i === pstart) {
+      i = n.nextPolygon
+      pstart = i
+      n = nodes[i]
+    }
+    if (i === start) break
+  }
   return i
 }
 
@@ -99,9 +108,38 @@ function clipNodes(out, A, B, opts) {
   }
 
   var coordinates = []
-  var rings = []
+  var rings = walk(nodes, mode === 'union' ? la : 0, get)
+  if (rings.length > 0) {
+    // unvisited holes:
+    if (mode !== 'intersect') {
+      for (var i = 0; i < la; i++) {
+        var n = nodes[i]
+        if (!n.visited && n.hole) {
+          var ring = walkHole(nodes, i, get)
+          if (ring.length > 0) rings.push(ring)
+        }
+      }
+    }
+    coordinates.push(rings)
+  }
+  if (mode === 'xor') {
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].visited = false
+      if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
+    }
+    rings = walk(nodes, la, get)
+    if (rings.length > 0) coordinates.push(rings)
+  }
+  return coordinates
+}
 
-  var start = mode === 'union' ? la : 0
+function getPoint(nodes,i) {
+  return nodes[i].point
+}
+
+function walk(nodes, start, get) {
+  var rings = []
+  var index = -1
   while ((index = firstNodeOfInterest(nodes, start)) !== start) {
     var n = nodes[index]
     var ring = []
@@ -112,49 +150,26 @@ function clipNodes(out, A, B, opts) {
         n.visited = true
         index = fwd ? n.next : n.prev
         n = nodes[index]
-        if (n.intersect) {
-          n.visited = true
-          break
-        } else {
-          ring.push(get(nodes,index))
-        }
+        n.visited = true
+        if (n.intersect) break
+        ring.push(get(nodes,index))
       }
     }
     rings.push(ring)
   }
-  coordinates.push(rings)
-
-  if (mode === 'xor') {
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].visited = false
-      if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
-    }
-    rings = []
-    while ((index = firstNodeOfInterest(nodes, la)) !== la) {
-      var n = nodes[index]
-      var ring = []
-      for (; !n.visited; index = n.neighbor, n = nodes[index]) {
-        ring.push(get(nodes,index))
-        var fwd = n.entry
-        while (true) {
-          n.visited = true
-          index = fwd ? n.next : n.prev
-          n = nodes[index]
-          if (n.intersect) {
-            n.visited = true
-            break
-          } else {
-            ring.push(get(nodes,index))
-          }
-        }
-      }
-      rings.push(ring)
-    }
-    coordinates.push(rings)
-  }
-  return coordinates
+  return rings
 }
 
-function getPoint(nodes,i) {
-  return nodes[i].point
+function walkHole(nodes, start, get) {
+  var ring = []
+  var index = start
+  var n = nodes[index]
+  while (!n.visited) {
+    n.visited = true
+    ring.push(get(nodes,index))
+    index = n.next
+    n = nodes[index]
+    if (index === start) break
+  }
+  return ring
 }
