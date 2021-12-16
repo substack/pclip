@@ -58,7 +58,6 @@ test('one triangle completely inside of another', function (t) {
     pointInPolygon: require('point-in-polygon'),
     distance: require('gl-vec2/distance'),
   }
-  var n = 3
   t.ok(peq(pclip.intersect(A,B,opts), [
     [[[1,1],[2,2],[3,1]]],
   ]), 'intersect')
@@ -128,7 +127,6 @@ test('cartesian scenario 1', function (t) {
     pointInPolygon: require('point-in-polygon'),
     distance: require('gl-vec2/distance'),
   }
-  var n = 3
   t.ok(peq(pclip.intersect(A,B,opts), [
     [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ], [ [ 8.889, 1.778 ], [ 10, 0 ], [ 8, 0 ] ] ],
   ], 1e-3), 'intersect')
@@ -170,7 +168,6 @@ test('cartesian scenario 2 with holes', function (t) {
   }
   console.dir(pclip.union(A,B,opts), { depth: 100 })
   /*
-  var n = 3
   t.deepEqual(pclip.intersect(A,B,opts), [
     [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ], [ [ 8.889, 1.778 ], [ 10, 0 ], [ 8, 0 ] ] ],
   ], 'intersect')
