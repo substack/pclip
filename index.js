@@ -40,11 +40,13 @@ function firstNodeOfInterest(nodes, start) {
     }
     i = n.next
     n = nodes[i]
+    /*
     if (i === pstart) {
       i = n.nextPolygon
       pstart = i
       n = nodes[i]
     }
+    */
     if (i === start) break
   }
   return i
@@ -145,15 +147,14 @@ function walk(nodes, start, get) {
     var n = nodes[index]
     var ring = []
     for (; !n.visited; index = n.neighbor, n = nodes[index]) {
-      ring.push(get(nodes,index))
       var fwd = n.entry
       while (true) {
+        ring.push(get(nodes,index))
         n.visited = true
         index = fwd ? n.next : n.prev
         n = nodes[index]
         n.visited = true
         if (n.intersect) break
-        ring.push(get(nodes,index))
       }
     }
     rings.push(ring)
