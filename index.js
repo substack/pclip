@@ -108,7 +108,8 @@ function clipNodes(out, A, B, opts) {
   }
 
   var coordinates = []
-  var rings = walk(nodes, mode === 'union' ? la : 0, get)
+  //var rings = walk(nodes, mode === 'union' ? la : 0, get)
+  var rings = walk(nodes, 0, get)
   if (rings.length > 0) {
     // unvisited holes:
     if (mode !== 'intersect') {
