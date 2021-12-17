@@ -40,13 +40,6 @@ function firstNodeOfInterest(nodes, start) {
     }
     i = n.next
     n = nodes[i]
-    /*
-    if (i === pstart) {
-      i = n.nextPolygon
-      pstart = i
-      n = nodes[i]
-    }
-    */
     if (i === start) break
   }
   return i
@@ -111,26 +104,14 @@ function clipNodes(out, A, B, opts) {
 
   var coordinates = []
   walk(pointInPolygon, coordinates, nodes, 0, get)
-  // unvisited holes:
-  for (var i = 0; i < la+lb; i++) {
-    var n = nodes[i]
-    if (!n.visited && n.hole) {
-      var ring = walkHole(nodes, i, get)
-      if (!ring) continue
-      for (var j = 0; j < coordinates.length; j++) {
-        if (pointInPolygon(ring[0], coordinates[j][0])) {
-          coordinates[j].push(ring)
-          break
-        }
-      }
-    }
-  }
+  checkUnvisited(pointInPolygon, get, nodes, coordinates, 0, la+lb)
   if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].visited = false
       if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
     }
     walk(pointInPolygon, coordinates, nodes, la, get)
+    checkUnvisited(pointInPolygon, get, nodes, coordinates, la, la+lb)
   }
   return coordinates
 }
@@ -156,7 +137,7 @@ function walk(pointInPolygon, coordinates, nodes, start, get) {
       }
     }
     for (var i = 0; i < coordinates.length; i++) {
-      if (pointInPolygon(ring[0], coordinates[i][0])) {
+      if (ringInsideRing(pointInPolygon, ring, coordinates[i][0])) {
         coordinates[i].push(ring)
         break
       }
@@ -185,4 +166,41 @@ function walkHole(nodes, start, get) {
   }
   if (ring !== null && ring.length < 3) return null
   return ring
+}
+
+function ptEq(a,b,epsilon) {
+  if (epsilon === undefined) epsilon = 1e-8
+  if (Math.abs(a[0]-b[0]) > epsilon) return false
+  if (Math.abs(a[1]-b[1]) > epsilon) return false
+  return true
+}
+
+function ringInsideRing(pointInPolygon, r0, r1) {
+  // find first point in r0 not equal to any point in r1
+  for (var i = 0; i < r0.length; i++) {
+    for (var j = 0; j < r1.length; j++) {
+      if (ptEq(r0[i],r1[j])) {
+        break
+      }
+    }
+    if (j === r1.length) break
+  }
+  return pointInPolygon(r0[i], r1)
+}
+
+function checkUnvisited(pointInPolygon, get, nodes, coordinates, start, end) {
+  // unvisited holes:
+  for (var i = start; i < end; i++) {
+    var n = nodes[i]
+    if (!n.visited && n.hole) {
+      var ring = walkHole(nodes, i, get)
+      if (!ring) continue
+      for (var j = 0; j < coordinates.length; j++) {
+        if (ringInsideRing(pointInPolygon, ring, coordinates[j][0])) {
+          coordinates[j].push(ring)
+          break
+        }
+      }
+    }
+  }
 }
