@@ -112,10 +112,11 @@ function clipNodes(out, A, B, opts) {
   var coordinates = []
   walk(pointInPolygon, coordinates, nodes, 0, get)
   // unvisited holes:
-  for (var i = 0; i < la; i++) {
+  for (var i = 0; i < la+lb; i++) {
     var n = nodes[i]
     if (!n.visited && n.hole) {
       var ring = walkHole(nodes, i, get)
+      if (!ring) continue
       for (var j = 0; j < coordinates.length; j++) {
         if (pointInPolygon(ring[0], coordinates[j][0])) {
           coordinates[j].push(ring)
@@ -145,9 +146,9 @@ function walk(pointInPolygon, coordinates, nodes, start, get) {
     var ring = []
     for (; !n.visited; index = n.neighbor, n = nodes[index]) {
       var fwd = n.entry
+      n.visited = true
       while (true) {
         ring.push(get(nodes,index))
-        n.visited = true
         index = fwd ? n.next : n.prev
         n = nodes[index]
         n.visited = true
@@ -162,19 +163,26 @@ function walk(pointInPolygon, coordinates, nodes, start, get) {
     }
     if (i === coordinates.length) coordinates.push([ring])
   }
-  return coordinates
 }
 
 function walkHole(nodes, start, get) {
-  var ring = []
   var index = start
   var n = nodes[index]
-  while (!n.visited) {
+  var ring = null
+  for (; !n.visited; index = n.neighbor, n = nodes[index]) {
+    var fwd = n.entry
+    if (ring === null) ring = []
     n.visited = true
-    ring.push(get(nodes,index))
-    index = n.next
-    n = nodes[index]
+    while (true) {
+      ring.push(get(nodes,index))
+      index = fwd ? n.next : n.prev
+      n = nodes[index]
+      n.visited = true
+      if (n.intersect) break
+      if (index === start) break
+    }
     if (index === start) break
   }
+  if (ring !== null && ring.length < 3) return null
   return ring
 }
