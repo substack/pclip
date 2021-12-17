@@ -110,28 +110,26 @@ function clipNodes(out, A, B, opts) {
   }
 
   var coordinates = []
-  //var rings = walk(nodes, mode === 'union' ? la : 0, get)
-  var rings = walk(nodes, 0, get)
-  if (rings.length > 0) {
-    // unvisited holes:
-    if (mode !== 'intersect') {
-      for (var i = 0; i < la; i++) {
-        var n = nodes[i]
-        if (!n.visited && n.hole) {
-          var ring = walkHole(nodes, i, get)
-          if (ring.length > 0) rings.push(ring)
+  walk(pointInPolygon, coordinates, nodes, 0, get)
+  // unvisited holes:
+  for (var i = 0; i < la; i++) {
+    var n = nodes[i]
+    if (!n.visited && n.hole) {
+      var ring = walkHole(nodes, i, get)
+      for (var j = 0; j < coordinates.length; j++) {
+        if (pointInPolygon(ring[0], coordinates[j][0])) {
+          coordinates[j].push(ring)
+          break
         }
       }
     }
-    coordinates.push(rings)
   }
   if (mode === 'xor') {
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].visited = false
       if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
     }
-    rings = walk(nodes, la, get)
-    if (rings.length > 0) coordinates.push(rings)
+    walk(pointInPolygon, coordinates, nodes, la, get)
   }
   return coordinates
 }
@@ -140,8 +138,7 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(nodes, start, get) {
-  var rings = []
+function walk(pointInPolygon, coordinates, nodes, start, get) {
   var index = -1
   while ((index = firstNodeOfInterest(nodes, start)) !== start) {
     var n = nodes[index]
@@ -157,9 +154,15 @@ function walk(nodes, start, get) {
         if (n.intersect) break
       }
     }
-    rings.push(ring)
+    for (var i = 0; i < coordinates.length; i++) {
+      if (pointInPolygon(ring[0], coordinates[i][0])) {
+        coordinates[i].push(ring)
+        break
+      }
+    }
+    if (i === coordinates.length) coordinates.push([ring])
   }
-  return rings
+  return coordinates
 }
 
 function walkHole(nodes, start, get) {
