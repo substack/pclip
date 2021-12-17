@@ -11,9 +11,9 @@ module.exports.intersect = function intersect(A, B, opts) {
   opts.mode = 'intersect'
   return clip(A, B, opts)
 }
-module.exports.xor = function xor(A, B, opts) {
+module.exports.exclude = function exclude(A, B, opts) {
   if (!opts) opts = mopts
-  opts.mode = 'xor'
+  opts.mode = 'exclude'
   return clip(A, B, opts)
 }
 module.exports.union = function union(A, B, opts) {
@@ -75,7 +75,7 @@ function clipNodes(out, A, B, opts) {
     throw new Error('todo')
   }
 
-  if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 2) {
+  if (C.length === 0 && (mode === 'exclude' || mode === 'difference') && out.dB === 2) {
     if (pointInPolygon(nodes[0].point, B)) { // A inside B
       return [[B,A]]
     } else if (out.dA === 2) { // B inside A
@@ -87,9 +87,9 @@ function clipNodes(out, A, B, opts) {
       r[0] = r[0].concat(B)
       return r
     }
-  } else if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 3) {
+  } else if (C.length === 0 && (mode === 'exclude' || mode === 'difference') && out.dB === 3) {
     throw new Error('todo')
-  } else if (C.length === 0 && (mode === 'xor' || mode === 'difference') && out.dB === 4) {
+  } else if (C.length === 0 && (mode === 'exclude' || mode === 'difference') && out.dB === 4) {
     throw new Error('todo')
   }
 
@@ -124,7 +124,7 @@ function clipNodes(out, A, B, opts) {
       }
     }
   }
-  if (mode === 'xor') {
+  if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].visited = false
       if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry

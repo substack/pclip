@@ -22,7 +22,7 @@ var opts = {
   distance: require('haversine-distance'),
 }
 console.log('intersect', show(pclip.intersect(A,B,opts)))
-console.log('xor', show(pclip.xor(A,B,opts)))
+console.log('exclude', show(pclip.exclude(A,B,opts)))
 console.log('union', show(pclip.union(A,B,opts)))
 console.log('difference', show(pclip.difference(A,B,opts)))
 
@@ -45,7 +45,7 @@ Each of the polygons `A`, `B`, and the result are an array of 2-item arrays.
 
 You must provide:
 
-* `opts.mode` must be one of: `'union'`, `'difference'`, `'intersect'`, `'xor'`
+* `opts.mode` must be one of: `'union'`, `'difference'`, `'intersect'`, `'exclude'`
 * `opts.intersect(out, A, B, C, D)` - calculate the intersection between line segments AB and CD,
   storing the result in `out`. `A`, `B`, `C`, `D`, and `out` are 2-element arrays.
 * `opts.pointInPolygon(point, polygon)` - return whether `point` (2-item array)
@@ -90,9 +90,9 @@ alias for `pclip(A, B, Object.assign({ mode: 'difference' }, opts))`
 
 alias for `pclip(A, B, Object.assign({ mode: 'intersect' }, opts))`
 
-## pclip.xor(A, B, opts)
+## pclip.exclude(A, B, opts)
 
-alias for `pclip(A, B, Object.assign({ mode: 'xor' }, opts))`
+alias for `pclip(A, B, Object.assign({ mode: 'exclude' }, opts))`
 
 # install
 

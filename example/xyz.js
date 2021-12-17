@@ -8,7 +8,7 @@ var opts = {
 }
 
 console.log('intersect', show(geoclip.intersect(A,B,opts)))
-console.log('xor', show(geoclip.xor(A,B,opts)))
+console.log('exclude', show(geoclip.exclude(A,B,opts)))
 console.log('union', show(geoclip.union(A,B,opts)))
 console.log('difference', show(geoclip.difference(A,B,opts)))
 

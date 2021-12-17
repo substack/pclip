@@ -7,7 +7,7 @@ var opts = {
   distance: require('haversine-distance'),
 }
 console.log('intersect', show(pclip.intersect(A,B,opts)))
-console.log('xor', show(pclip.xor(A,B,opts)))
+console.log('exclude', show(pclip.exclude(A,B,opts)))
 console.log('union', show(pclip.union(A,B,opts)))
 console.log('difference', show(pclip.difference(A,B,opts)))
 
