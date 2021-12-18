@@ -40,6 +40,11 @@ function firstNodeOfInterest(nodes, start) {
     }
     i = n.next
     n = nodes[i]
+    if (i === pstart) {
+      i = n.nextPolygon
+      pstart = i
+      n = nodes[i]
+    }
     if (i === start) break
   }
   return i
