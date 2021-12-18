@@ -8,28 +8,24 @@ module.exports = clip
 
 module.exports.intersect = function intersect(A, B, opts) {
   if (!opts) opts = mopts
-  opts.mode = 'intersect'
-  return clip(A, B, opts)
+  return clip(A, B, opts, 'intersect')
 }
 module.exports.exclude = function exclude(A, B, opts) {
   if (!opts) opts = mopts
-  opts.mode = 'exclude'
-  return clip(A, B, opts)
+  return clip(A, B, opts, 'exclude')
 }
 module.exports.union = function union(A, B, opts) {
   if (!opts) opts = mopts
-  opts.mode = 'union'
-  return clip(A, B, opts)
+  return clip(A, B, opts, 'union')
 }
 module.exports.difference = function difference(A, B, opts) {
   if (!opts) opts = mopts
-  opts.mode = 'difference'
-  return clip(A, B, opts)
+  return clip(A, B, opts, 'difference')
 }
 
-function clip(A, B, opts) {
-  calcNodes(out, A, B, opts)
-  return clipNodes(out, A, B, opts)
+function clip(A, B, opts, mode) {
+  calcNodes(out, A, B, opts, mode)
+  return clipNodes(out, A, B, opts, mode)
 }
 
 function firstNodeOfInterest(nodes, start) {
@@ -50,10 +46,10 @@ function firstNodeOfInterest(nodes, start) {
   return i
 }
 
-function clipNodes(out, A, B, opts) {
+function clipNodes(out, A, B, opts, mode) {
   var nodes = out.nodes, C = out.npoints
   var get = opts.get || getPoint
-  var mode = opts.mode
+  if (mode === undefined) mode = opts.mode
   var la = out.la, lb = out.lb
   var pointInPolygon = opts.pointInPolygon
 
@@ -194,7 +190,6 @@ function ringInsideRing(pointInPolygon, r0, r1) {
 }
 
 function checkUnvisited(pointInPolygon, get, nodes, coordinates, start, end) {
-  // unvisited holes:
   for (var i = start; i < end; i++) {
     var n = nodes[i]
     if (!n.visited && n.hole) {
