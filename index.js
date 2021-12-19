@@ -28,17 +28,20 @@ function clip(A, B, opts, mode) {
   return clipNodes(out, A, B, opts, mode)
 }
 
-function firstNodeOfInterest(nodes, start) {
+function firstNodeOfInterest(nodes, start, skipAllNotVisited) {
   var i = start, pstart = start, n = nodes[i]
+  var allNotVisited = true
   while (true) {
-    if (!(!n.intersect || (n.intersect && n.visited))) {
-      break
-    }
+    allNotVisited = allNotVisited && !n.visited
+    if (n.intersect && !n.visited) break
     i = n.next
     n = nodes[i]
+    allNotVisited = allNotVisited && !n.visited
     if (i === pstart) {
+      if (skipAllNotVisited && allNotVisited) break
       i = n.nextPolygon
       pstart = i
+      allNotVisited = true
       n = nodes[i]
     }
     if (i === start) break
@@ -104,15 +107,20 @@ function clipNodes(out, A, B, opts, mode) {
   }
 
   var coordinates = []
-  walk(pointInPolygon, coordinates, nodes, 0, get)
-  checkUnvisited(pointInPolygon, get, nodes, coordinates, 0, la+lb)
-  if (mode === 'exclude') {
+  var modeSkip = mode !== 'intersect'
+  walk(pointInPolygon, coordinates, nodes, 0, get, modeSkip)
+  checkUnvisited(pointInPolygon, get, mode, nodes, coordinates, 0, la+lb)
+  if (mode === 'union') {
+    walk(pointInPolygon, coordinates, nodes, la, get, modeSkip)
+    checkUnvisited(pointInPolygon, get, mode, nodes, coordinates, 0, la+lb)
+  } else if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
-      nodes[i].visited = false
-      if (nodes[i].intersect) nodes[i].entry = !nodes[i].entry
+      var n = nodes[i]
+      n.visited = false
+      if (n.intersect) n.entry = !n.entry
     }
-    walk(pointInPolygon, coordinates, nodes, la, get)
-    checkUnvisited(pointInPolygon, get, nodes, coordinates, la, la+lb)
+    walk(pointInPolygon, coordinates, nodes, la, get, modeSkip)
+    checkUnvisited(pointInPolygon, get, mode, nodes, coordinates, la, la+lb)
   }
   return coordinates
 }
@@ -121,22 +129,25 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(pointInPolygon, coordinates, nodes, start, get) {
+function walk(pointInPolygon, coordinates, nodes, start, get, modeSkip) {
   var index = -1
-  while ((index = firstNodeOfInterest(nodes, start)) !== start) {
+  while ((index = firstNodeOfInterest(nodes, start, modeSkip)) !== start) {
     var n = nodes[index]
     var ring = []
-    for (; !n.visited; index = n.neighbor, n = nodes[index]) {
+    for (; index >= 0 && !n.visited; index = n.neighbor, n = nodes[index]) {
       var fwd = n.entry
-      n.visited = true
-      while (true) {
+      while (!n.visited) {
+        n.visited = true
         ring.push(get(nodes,index))
         index = fwd ? n.next : n.prev
         n = nodes[index]
-        n.visited = true
-        if (n.intersect) break
+        if (n.intersect) {
+          n.visited = true
+          break
+        }
       }
     }
+    if (ring.length < 3) continue
     for (var i = 0; i < coordinates.length; i++) {
       if (ringInsideRing(pointInPolygon, ring, coordinates[i][0])) {
         coordinates[i].push(ring)
@@ -186,10 +197,11 @@ function ringInsideRing(pointInPolygon, r0, r1) {
     }
     if (j === r1.length) break
   }
+  if (i === r0.length) return false // same ring
   return pointInPolygon(r0[i], r1)
 }
 
-function checkUnvisited(pointInPolygon, get, nodes, coordinates, start, end) {
+function checkUnvisited(pointInPolygon, get, mode, nodes, coordinates, start, end) {
   for (var i = start; i < end; i++) {
     var n = nodes[i]
     if (!n.visited && n.hole) {
