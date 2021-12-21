@@ -1,11 +1,7 @@
 var geoclip = require('../')
 var A = [[0,0],[5,8],[10,0]]
 var B = [[5,4],[10,12],[10,4]]
-var opts = {
-  intersect: require('line-segment-intersect-2d'),
-  pointInPolygon: require('point-in-polygon'),
-  distance: require('gl-vec2/distance'),
-}
+var opts = require('pclip/xy')
 
 console.log('intersect', show(geoclip.intersect(A,B,opts)))
 console.log('exclude', show(geoclip.exclude(A,B,opts)))
