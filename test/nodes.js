@@ -1,99 +1,476 @@
 var test = require('tape')
 var calcNodes = require('../lib/nodes.js')
+var xy = require('../xy.js')
+var geo = require('../geo.js')
 
 test('nodes', function (t) {
   var A = [[0,0],[5,8],[10,0]]
   var B = [[5,4],[10,12],[10,4]]
-  var optList = [
-    {
-      intersect: require('line-segment-intersect-2d'),
-      pointInPolygon: require('point-in-polygon'),
-      distance: require('gl-vec2/distance'),
-    },
-    {
-      intersect: require('intersect-great-circle'),
-      pointInPolygon: require('geo-point-in-polygon'),
-      distance: require('haversine-distance'),
-    },
-  ]
+  var optList = [xy,geo]
   optList.forEach(function (opts) {
-    var npoints = [], nodes = Array(A.length+B.length)
-    var out = {
-      nodes: [],
-      npoints: [],
-    }
+    var out = { nodes: [], npoints: [] }
     calcNodes(out, A, B, opts)
     t.deepEqual(fields(out.nodes[0]), {
       intersect: false,
       entry: false,
       next: 1,
       prev: 2,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 0,
+      hole: false,
     }, 'nodes[0]')
     t.deepEqual(fields(out.nodes[1]), {
       intersect: false,
       entry: false,
       next: 6,
       prev: 0,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 0,
+      hole: false,
     }, 'nodes[1]')
     t.deepEqual(fields(out.nodes[2]), {
       intersect: false,
       entry: false,
       next: 0,
       prev: 8,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 0,
+      hole: false,
     }, 'nodes[2]')
     t.deepEqual(fields(out.nodes[3]), {
       intersect: false,
       entry: false,
       next: 7,
       prev: 9,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 3,
+      hole: false,
     }, 'nodes[3]')
     t.deepEqual(fields(out.nodes[4]), {
       intersect: false,
       entry: false,
       next: 5,
       prev: 7,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 3,
+      hole: false,
     }, 'nodes[4]')
     t.deepEqual(fields(out.nodes[5]), {
       intersect: false,
       entry: false,
       next: 9,
       prev: 4,
-      neighbor: -1
+      neighbor: -1,
+      nextPolygon: 3,
+      hole: false,
     }, 'nodes[5]')
     t.deepEqual(fields(out.nodes[6]), {
       intersect: true,
       entry: false,
       next: 8,
       prev: 1,
-      neighbor: 7
+      neighbor: 7,
+      nextPolygon: 0,
+      hole: false,
     }, 'nodes[6]')
     t.deepEqual(fields(out.nodes[7]), {
       intersect: true,
       entry: false,
       next: 4,
       prev: 3,
-      neighbor: 6
+      neighbor: 6,
+      nextPolygon: 3,
+      hole: false,
     }, 'nodes[7]')
     t.deepEqual(fields(out.nodes[8]), {
       intersect: true,
       entry: true,
       next: 2,
       prev: 6,
-      neighbor: 9
+      neighbor: 9,
+      nextPolygon: 0,
+      hole: false,
     }, 'nodes[8]')
     t.deepEqual(fields(out.nodes[9]), {
       intersect: true,
       entry: true,
       next: 3,
       prev: 5,
-      neighbor: 8
+      neighbor: 8,
+      nextPolygon: 3,
+      hole: false,
     }, 'nodes[9]')
   })
+  t.end()
+})
+
+test('nodes with multiple polygons and holes', function (t) {
+  var A = [
+    [
+      [[0,0],[5,8],[10,0]], // clips B
+      [[5,5],[6,3],[4,3]], // hole clips B
+      [[1,1],[2,2],[3,1]], // hole doesn't clip B
+    ],
+    [[[14,5],[15,7],[16,5]]], // doesn't clip B
+    [
+      [[5,-1],[9,-4],[1,-4]], // doesn't clip B
+      [[4,-3],[5,-2],[6,-3]], // hole doesn't clip B
+    ],
+  ]
+  var B = [
+    [
+      [[5,4],[10,12],[10,4]],
+      [[9,6],[8,6],[9,5]], // hole doesn't clip A
+      [[6,4.2],[6,5],[7,4.2]], // hole completely inside A
+    ],
+    [
+      [[0,12],[0,5],[5,12]], // doesn't clip A
+    ]
+  ]
+  var out = { nodes: [], npoints: [] }
+  calcNodes(out, A, B, xy)
+  t.deepEqual(fields(out.nodes[0]), {
+    next: 1,
+    prev: 2,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 3,
+  }, 'nodes[0]')
+  t.deepEqual(fields(out.nodes[1]), {
+    next: 30,
+    prev: 0,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 3,
+  }, 'nodes[1]')
+  t.deepEqual(fields(out.nodes[2]), {
+    next: 0,
+    prev: 32,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 3,
+  }, 'nodes[2]')
+  t.deepEqual(fields(out.nodes[3]), {
+    next: 34,
+    prev: 5,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 6,
+  }, 'nodes[3]')
+  t.deepEqual(fields(out.nodes[4]), {
+    next: 5,
+    prev: 36,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 6,
+  }, 'nodes[4]')
+  t.deepEqual(fields(out.nodes[5]), {
+    next: 3,
+    prev: 4,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 6,
+  }, 'nodes[5]')
+  t.deepEqual(fields(out.nodes[6]), {
+    next: 7,
+    prev: 8,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 9,
+  }, 'nodes[6]')
+  t.deepEqual(fields(out.nodes[7]), {
+    next: 8,
+    prev: 6,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 9,
+  }, 'nodes[7]')
+  t.deepEqual(fields(out.nodes[8]), {
+    next: 6,
+    prev: 7,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 9,
+  }, 'nodes[8]')
+  t.deepEqual(fields(out.nodes[9]), {
+    next: 10,
+    prev: 11,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 12,
+  }, 'nodes[9]')
+  t.deepEqual(fields(out.nodes[10]), {
+    next: 11,
+    prev: 9,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 12,
+  }, 'nodes[10]')
+  t.deepEqual(fields(out.nodes[11]), {
+    next: 9,
+    prev: 10,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 12,
+  }, 'nodes[11]')
+  t.deepEqual(fields(out.nodes[12]), {
+    next: 13,
+    prev: 14,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 15,
+  }, 'nodes[12]')
+  t.deepEqual(fields(out.nodes[13]), {
+    next: 14,
+    prev: 12,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 15,
+  }, 'nodes[13]')
+  t.deepEqual(fields(out.nodes[14]), {
+    next: 12,
+    prev: 13,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 15,
+  }, 'nodes[14]')
+  t.deepEqual(fields(out.nodes[15]), {
+    next: 16,
+    prev: 17,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 0,
+  }, 'nodes[15]')
+  t.deepEqual(fields(out.nodes[16]), {
+    next: 17,
+    prev: 15,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 0,
+  }, 'nodes[16]')
+  t.deepEqual(fields(out.nodes[17]), {
+    next: 15,
+    prev: 16,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 0,
+  }, 'nodes[17]')
+  t.deepEqual(fields(out.nodes[18]), {
+    next: 35,
+    prev: 37,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[18]')
+  t.deepEqual(fields(out.nodes[19]), {
+    next: 20,
+    prev: 31,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[19]')
+  t.deepEqual(fields(out.nodes[20]), {
+    next: 33,
+    prev: 19,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[20]')
+  t.deepEqual(fields(out.nodes[21]), {
+    next: 22,
+    prev: 23,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 24,
+  }, 'nodes[21]')
+  t.deepEqual(fields(out.nodes[22]), {
+    next: 23,
+    prev: 21,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 24,
+  }, 'nodes[22]')
+  t.deepEqual(fields(out.nodes[23]), {
+    next: 21,
+    prev: 22,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 24,
+  }, 'nodes[23]')
+  t.deepEqual(fields(out.nodes[24]), {
+    next: 25,
+    prev: 26,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 27,
+  }, 'nodes[24]')
+  t.deepEqual(fields(out.nodes[25]), {
+    next: 26,
+    prev: 24,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 27,
+  }, 'nodes[25]')
+  t.deepEqual(fields(out.nodes[26]), {
+    next: 24,
+    prev: 25,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: true,
+    nextPolygon: 27,
+  }, 'nodes[26]')
+  t.deepEqual(fields(out.nodes[27]), {
+    next: 28,
+    prev: 29,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 18,
+  }, 'nodes[27]')
+  t.deepEqual(fields(out.nodes[28]), {
+    next: 29,
+    prev: 27,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 18,
+  }, 'nodes[28]')
+  t.deepEqual(fields(out.nodes[29]), {
+    next: 27,
+    prev: 28,
+    neighbor: -1,
+    intersect: false,
+    entry: false,
+    hole: false,
+    nextPolygon: 18,
+  }, 'nodes[29]')
+  t.deepEqual(fields(out.nodes[30]), {
+    next: 32,
+    prev: 1,
+    neighbor: 31,
+    intersect: true,
+    entry: false,
+    hole: false,
+    nextPolygon: 3,
+  }, 'nodes[30]')
+  t.deepEqual(fields(out.nodes[31]), {
+    next: 19,
+    prev: 35,
+    neighbor: 30,
+    intersect: true,
+    entry: false,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[31]')
+  t.deepEqual(fields(out.nodes[32]), {
+    next: 2,
+    prev: 30,
+    neighbor: 33,
+    intersect: true,
+    entry: true,
+    hole: false,
+    nextPolygon: 3,
+  }, 'nodes[32]')
+  t.deepEqual(fields(out.nodes[33]), {
+    next: 37,
+    prev: 20,
+    neighbor: 32,
+    intersect: true,
+    entry: true,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[33]')
+  t.deepEqual(fields(out.nodes[34]), {
+    next: 36,
+    prev: 3,
+    neighbor: 35,
+    intersect: true,
+    entry: false,
+    hole: true,
+    nextPolygon: 6,
+  }, 'nodes[34]')
+  t.deepEqual(fields(out.nodes[35]), {
+    next: 31,
+    prev: 18,
+    neighbor: 34,
+    intersect: true,
+    entry: true,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[35]')
+  t.deepEqual(fields(out.nodes[36]), {
+    next: 4,
+    prev: 34,
+    neighbor: 37,
+    intersect: true,
+    entry: true,
+    hole: true,
+    nextPolygon: 6,
+  }, 'nodes[36]')
+  t.deepEqual(fields(out.nodes[37]), {
+    next: 18,
+    prev: 33,
+    neighbor: 36,
+    intersect: true,
+    entry: false,
+    hole: false,
+    nextPolygon: 21,
+  }, 'nodes[37]')
   t.end()
 })
 
@@ -104,5 +481,7 @@ function fields(node) {
     next: node.next,
     prev: node.prev,
     neighbor: node.neighbor,
+    nextPolygon: node.nextPolygon,
+    hole: node.hole,
   }
 }
