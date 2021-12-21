@@ -1,12 +1,10 @@
 # pclip
 
-polygon clipping where you provide routines to handle the coordinate system
+pluggable polygon clipping with multipolygon and hole support
 
 Pretty much all polygon clipping libraries will give you operations in cartesian space, but with
 this module you can also perform clipping on for example geodetic (lon,lat) coordinates with edges
 along great circle arcs.
-
-Supports multi-polygon inputs with holes, similar to geojson.
 
 clipping based on [greiner-hormann algorithm](https://davis.wpi.edu/~matt/courses/clipping/)
 
