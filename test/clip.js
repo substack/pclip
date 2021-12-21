@@ -105,7 +105,7 @@ test('subject triangle with hole, clip triangle with hole not clipped', function
   t.end()
 })
 
-test('cartesian scenario 1', function (t) {
+test('simple cartesian polygons', function (t) {
   var A = [
     [0,0],[5,8],[10,0]
   ]
@@ -133,7 +133,7 @@ test('cartesian scenario 1', function (t) {
   t.end()
 })
 
-test('cartesian scenario 2 with holes', function (t) {
+test('cartesian polygons with holes', function (t) {
   var A = [
     [
       [[-5,-1],[+0,+4],[+1,+1],[+3,+1],[+3,-1],[+0,-1],[+0,-2],[-4,-2]],
@@ -333,7 +333,7 @@ test('4 triangles in subject, 4 triangles in clip with half non-intersecting tri
   t.end()
 })
 
-test('cartesian scenario 3 multiple polygons with holes', function (t) {
+test('multiple polygons with holes', function (t) {
   var A = [
     [[[-4,-3],[+4,-3],[+3,-5]]],
     [
@@ -356,17 +356,17 @@ test('cartesian scenario 3 multiple polygons with holes', function (t) {
     ],
   ]
   t.ok(peq(pclip.intersect(A,B,xyz), [
-    [[[-10/3,+2/3],[-3,+1],[-2,+1],[-2,+0],[-2.5,+0.25],[-8/3,+1/3]]],
+    [[[-10/3,+2/3],[-3,+1],[-2,+1],[-2,+0],[-2.5,+0.25],[-2.5,+0.5],[-8/3,+1/3]]],
     [
       [
         [-10/7,-2/7],[+0,+4],[+10/3,+4],[+11/3,+3],[+3,+3],[+2.5,+2],[+2,+3],
         [+0,+3],[+0,+2],[+15/7,+9/7],[+2,+1],[+3.2,+0.4],[+51/19,-12/19],
-        [+2,+0.7],[+2,+0],[+11/9,-7/9],[-1/6,-11/12],
+        [+2,-0.7],[+2,+0],[+11/9,-7/9],[-1/6,-11/12],
       ],
       [[+0,+0],[+0,+1],[+1,+1],[+1,+0]],
     ],
-    [[+1,-1.5],[-2/7,-6/7],[+2,-2]],
-    [[-29/9,-29/9],[-3,-3],[+2.75,-3],[+2,-4],[-0.5,-4]],
+    [[[+1,-1.5],[19/9,-16/9],[+2,-2]]],
+    [[[-29/9,-29/9],[-3,-3],[+2.75,-3],[+2,-4],[-0.5,-4]]],
   ], 1e-3), 'intersect')
   t.ok(peq(pclip.union(A,B,xyz), [
     [
@@ -382,6 +382,5 @@ test('cartesian scenario 3 multiple polygons with holes', function (t) {
     [[+15/7,+9/7],[+2.5,+2],[+3,+1]],
     [[+2,-0.7],[+11/9,-7/9],[+1,-1],[+2,-1]],
   ], 1e-3), 'union')
-  console.dir(pclip.union(A,B,xyz), { depth: 100 })
   t.end()
 })

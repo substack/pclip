@@ -16,11 +16,8 @@ clipping based on [greiner-hormann algorithm](https://davis.wpi.edu/~matt/course
 var pclip = require('pclip')
 var A = [[0,0],[5,8],[10,0]]
 var B = [[5,4],[10,12],[10,4]]
-var opts = {
-  intersect: require('intersect-great-circle'),
-  pointInPolygon: require('geo-point-in-polygon'),
-  distance: require('haversine-distance'),
-}
+var opts = require('pclip/geo') // geodetic (lon,lat) coordinates
+
 console.log('intersect', show(pclip.intersect(A,B,opts)))
 console.log('exclude', show(pclip.exclude(A,B,opts)))
 console.log('union', show(pclip.union(A,B,opts)))
@@ -35,6 +32,8 @@ function show(cs) {
 
 ``` js
 var pclip = require('pclip')
+var xy = require('pclip/xy') // cartesian coordinate options
+var geo = require('pclip/geo') // geodetic (lon,lat) coordinate options
 ```
 
 ## pclip(A, B, opts)
@@ -52,31 +51,14 @@ You must provide:
   is inside of `polygon` (array of 2-item arrays)
 * `opts.distance(A,B)` - return the distance between points `A` and `B`
 
+This package provides cartesian coordinate methods as `require('pclip/xy')`
+and geodetic coordinate options as `require('pclip/geo')`.
+
 and you can optionally provide:
 
 * `opts.get(nodes,i)` - map the array of nodes and the node inex to the result type.
   by default, this is `nodes[i].point` but you can supply extra information here such as the index
   to determine if for example an edge is from the original polygon or a result of clipping.
-
-### cartesian coordinate options
-
-``` js
-{
-  intersect: require('intersect-great-circle'),
-  pointInPolygon: require('geo-point-in-polygon'),
-  distance: require('haversine-distance'),
-}
-```
-
-### geodetic coordinate options
-
-``` js
-{
-  intersect: require('line-segment-intersect-2d'),
-  pointInPolygon: require('point-in-polygon'),
-  distance: require('gl-vec2/distance'),
-}
-```
 
 ## pclip.union(A, B, opts)
 

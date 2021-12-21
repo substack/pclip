@@ -18,6 +18,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 0,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[0]')
     t.deepEqual(fields(out.nodes[1]), {
       intersect: false,
@@ -27,6 +29,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 0,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[1]')
     t.deepEqual(fields(out.nodes[2]), {
       intersect: false,
@@ -36,6 +40,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 0,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[2]')
     t.deepEqual(fields(out.nodes[3]), {
       intersect: false,
@@ -45,6 +51,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 3,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[3]')
     t.deepEqual(fields(out.nodes[4]), {
       intersect: false,
@@ -54,6 +62,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 3,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[4]')
     t.deepEqual(fields(out.nodes[5]), {
       intersect: false,
@@ -63,6 +73,8 @@ test('nodes', function (t) {
       neighbor: -1,
       nextPolygon: 3,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[5]')
     t.deepEqual(fields(out.nodes[6]), {
       intersect: true,
@@ -72,6 +84,8 @@ test('nodes', function (t) {
       neighbor: 7,
       nextPolygon: 0,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[6]')
     t.deepEqual(fields(out.nodes[7]), {
       intersect: true,
@@ -81,6 +95,8 @@ test('nodes', function (t) {
       neighbor: 6,
       nextPolygon: 3,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[7]')
     t.deepEqual(fields(out.nodes[8]), {
       intersect: true,
@@ -90,6 +106,8 @@ test('nodes', function (t) {
       neighbor: 9,
       nextPolygon: 0,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[8]')
     t.deepEqual(fields(out.nodes[9]), {
       intersect: true,
@@ -99,6 +117,8 @@ test('nodes', function (t) {
       neighbor: 8,
       nextPolygon: 3,
       hole: false,
+      inside: false,
+      loop: false,
     }, 'nodes[9]')
   })
   t.end()
@@ -137,6 +157,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 3,
+    inside: false,
+    loop: false,
   }, 'nodes[0]')
   t.deepEqual(fields(out.nodes[1]), {
     next: 30,
@@ -146,6 +168,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 3,
+    inside: false,
+    loop: false,
   }, 'nodes[1]')
   t.deepEqual(fields(out.nodes[2]), {
     next: 0,
@@ -155,6 +179,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 3,
+    inside: false,
+    loop: false,
   }, 'nodes[2]')
   t.deepEqual(fields(out.nodes[3]), {
     next: 34,
@@ -164,6 +190,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 6,
+    inside: false,
+    loop: false,
   }, 'nodes[3]')
   t.deepEqual(fields(out.nodes[4]), {
     next: 5,
@@ -173,6 +201,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 6,
+    inside: false,
+    loop: false,
   }, 'nodes[4]')
   t.deepEqual(fields(out.nodes[5]), {
     next: 3,
@@ -182,6 +212,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 6,
+    inside: false,
+    loop: false,
   }, 'nodes[5]')
   t.deepEqual(fields(out.nodes[6]), {
     next: 7,
@@ -191,6 +223,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 9,
+    inside: false,
+    loop: true,
   }, 'nodes[6]')
   t.deepEqual(fields(out.nodes[7]), {
     next: 8,
@@ -200,6 +234,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 9,
+    inside: false,
+    loop: true,
   }, 'nodes[7]')
   t.deepEqual(fields(out.nodes[8]), {
     next: 6,
@@ -209,6 +245,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 9,
+    inside: false,
+    loop: true,
   }, 'nodes[8]')
   t.deepEqual(fields(out.nodes[9]), {
     next: 10,
@@ -218,6 +256,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 12,
+    inside: false,
+    loop: true,
   }, 'nodes[9]')
   t.deepEqual(fields(out.nodes[10]), {
     next: 11,
@@ -227,6 +267,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 12,
+    inside: false,
+    loop: true,
   }, 'nodes[10]')
   t.deepEqual(fields(out.nodes[11]), {
     next: 9,
@@ -236,6 +278,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 12,
+    inside: false,
+    loop: true,
   }, 'nodes[11]')
   t.deepEqual(fields(out.nodes[12]), {
     next: 13,
@@ -245,6 +289,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 15,
+    inside: false,
+    loop: true,
   }, 'nodes[12]')
   t.deepEqual(fields(out.nodes[13]), {
     next: 14,
@@ -254,6 +300,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 15,
+    inside: false,
+    loop: true,
   }, 'nodes[13]')
   t.deepEqual(fields(out.nodes[14]), {
     next: 12,
@@ -263,6 +311,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 15,
+    inside: false,
+    loop: true,
   }, 'nodes[14]')
   t.deepEqual(fields(out.nodes[15]), {
     next: 16,
@@ -272,6 +322,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 0,
+    inside: false,
+    loop: true,
   }, 'nodes[15]')
   t.deepEqual(fields(out.nodes[16]), {
     next: 17,
@@ -281,6 +333,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 0,
+    inside: false,
+    loop: true,
   }, 'nodes[16]')
   t.deepEqual(fields(out.nodes[17]), {
     next: 15,
@@ -290,6 +344,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 0,
+    inside: false,
+    loop: true,
   }, 'nodes[17]')
   t.deepEqual(fields(out.nodes[18]), {
     next: 35,
@@ -299,6 +355,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[18]')
   t.deepEqual(fields(out.nodes[19]), {
     next: 20,
@@ -308,6 +366,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[19]')
   t.deepEqual(fields(out.nodes[20]), {
     next: 33,
@@ -317,6 +377,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[20]')
   t.deepEqual(fields(out.nodes[21]), {
     next: 22,
@@ -326,6 +388,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 24,
+    inside: false,
+    loop: true,
   }, 'nodes[21]')
   t.deepEqual(fields(out.nodes[22]), {
     next: 23,
@@ -335,6 +399,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 24,
+    inside: false,
+    loop: true,
   }, 'nodes[22]')
   t.deepEqual(fields(out.nodes[23]), {
     next: 21,
@@ -344,6 +410,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 24,
+    inside: false,
+    loop: true,
   }, 'nodes[23]')
   t.deepEqual(fields(out.nodes[24]), {
     next: 25,
@@ -353,6 +421,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 27,
+    inside: true,
+    loop: true,
   }, 'nodes[24]')
   t.deepEqual(fields(out.nodes[25]), {
     next: 26,
@@ -362,6 +432,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 27,
+    inside: true,
+    loop: true,
   }, 'nodes[25]')
   t.deepEqual(fields(out.nodes[26]), {
     next: 24,
@@ -371,6 +443,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 27,
+    inside: true,
+    loop: true,
   }, 'nodes[26]')
   t.deepEqual(fields(out.nodes[27]), {
     next: 28,
@@ -380,6 +454,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 18,
+    inside: false,
+    loop: true,
   }, 'nodes[27]')
   t.deepEqual(fields(out.nodes[28]), {
     next: 29,
@@ -389,6 +465,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 18,
+    inside: false,
+    loop: true,
   }, 'nodes[28]')
   t.deepEqual(fields(out.nodes[29]), {
     next: 27,
@@ -398,6 +476,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 18,
+    inside: false,
+    loop: true,
   }, 'nodes[29]')
   t.deepEqual(fields(out.nodes[30]), {
     next: 32,
@@ -407,6 +487,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 3,
+    inside: false,
+    loop: false,
   }, 'nodes[30]')
   t.deepEqual(fields(out.nodes[31]), {
     next: 19,
@@ -416,6 +498,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[31]')
   t.deepEqual(fields(out.nodes[32]), {
     next: 2,
@@ -425,6 +509,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: true,
     hole: false,
     nextPolygon: 3,
+    inside: false,
+    loop: false,
   }, 'nodes[32]')
   t.deepEqual(fields(out.nodes[33]), {
     next: 37,
@@ -434,6 +520,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: true,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[33]')
   t.deepEqual(fields(out.nodes[34]), {
     next: 36,
@@ -443,6 +531,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: true,
     nextPolygon: 6,
+    inside: false,
+    loop: false,
   }, 'nodes[34]')
   t.deepEqual(fields(out.nodes[35]), {
     next: 31,
@@ -452,6 +542,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: true,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[35]')
   t.deepEqual(fields(out.nodes[36]), {
     next: 4,
@@ -461,6 +553,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: true,
     hole: true,
     nextPolygon: 6,
+    inside: false,
+    loop: false,
   }, 'nodes[36]')
   t.deepEqual(fields(out.nodes[37]), {
     next: 18,
@@ -470,6 +564,8 @@ test('nodes with multiple polygons and holes', function (t) {
     entry: false,
     hole: false,
     nextPolygon: 21,
+    inside: false,
+    loop: false,
   }, 'nodes[37]')
   t.end()
 })
@@ -483,5 +579,7 @@ function fields(node) {
     neighbor: node.neighbor,
     nextPolygon: node.nextPolygon,
     hole: node.hole,
+    loop: node.loop,
+    inside: node.inside,
   }
 }
