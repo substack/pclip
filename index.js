@@ -24,6 +24,8 @@ module.exports.difference = function difference(A, B, opts) {
 }
 
 function clip(A, B, opts, mode) {
+  out.npoints = []
+  out.nodes = []
   calcNodes(out, A, B, opts, mode)
   return clipNodes(out, A, B, opts, mode)
 }
@@ -40,7 +42,7 @@ function firstNodeOfInterest(nodes, start) {
       pstart = i
       n = nodes[i]
     }
-    if (i === start) break
+    if (i === start) return -1
   }
   return i
 }
@@ -69,9 +71,11 @@ function getPoint(nodes,i) {
 }
 
 function walk(pip, coordinates, out, start, get, mode) {
-  var index = -1
+  var index = start
   var nodes = out.nodes
-  while ((index = firstNodeOfInterest(nodes, start)) !== start) {
+  while (true) {
+    index = firstNodeOfInterest(nodes, index)
+    if (index < 0) break
     var n = nodes[index]
     if (mode === 'intersect' && n.loop && !n.inside) {
       visitLoop(nodes, index)
@@ -90,13 +94,13 @@ function walk(pip, coordinates, out, start, get, mode) {
       continue
     }
     var ring = []
-    for (; index >= 0 && !n.visited; index = n.neighbor, n = nodes[index]) {
+    for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
         n.visited = true
-        ring.push(get(nodes,index))
-        index = fwd ? n.next : n.prev
-        n = nodes[index]
+        ring.push(get(nodes,i))
+        i = fwd ? n.next : n.prev
+        n = nodes[i]
         if (n.intersect) {
           n.visited = true
           break
