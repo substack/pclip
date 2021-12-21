@@ -38,7 +38,17 @@ var geo = require('pclip/geo') // geodetic (lon,lat) coordinate options
 
 Return a new polygon that applies the operation `opts.mode` between A and B.
 
-Each of the polygons `A`, `B`, and the result are an array of 2-item arrays.
+Each point in polygons `A` and `B` is a 2-element array `[x,y]`. Similar to geojson,
+polygons can have holes and you can specify multiple polygons with holes:
+
+* depth=2 - single polygon: `[[x0,y0],[x1,y1],...]`
+* depth=3 - single polygon with holes: `[[[x0,y0],[x1,y1],...],hole0,hole1...]`
+* depth=4 - multiple polygons, each with holes: `[polygon0,polygon1,...]`
+
+Each hole is formatted like a single polygon: `[[x0,y0],[x1,y1],...]`.
+
+Polygons and holes may, but are not required to, have a first point equal to their last point.
+Everything works the same whether or not there is a duplicate last point.
 
 You must provide:
 
