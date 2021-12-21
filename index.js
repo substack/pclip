@@ -1,7 +1,7 @@
 // https://davis.wpi.edu/~matt/courses/clipping/
 
 var calcNodes = require('./lib/nodes.js')
-var mopts = { mode: 0 }
+var mopts = {}
 var out = { npoints: [], nodes: [], la: 0, lb: 0 }
 
 module.exports = clip
@@ -85,6 +85,10 @@ function walk(pip, coordinates, out, start, get, mode) {
       n.visited = true
       continue
     }
+    if (mode === 'difference' && n.loop && n.inside && index < out.la) {
+      n.visited = true
+      continue
+    }
     var ring = []
     for (; index >= 0 && !n.visited; index = n.neighbor, n = nodes[index]) {
       var fwd = n.entry
@@ -99,7 +103,7 @@ function walk(pip, coordinates, out, start, get, mode) {
         }
       }
     }
-    if (ring.length < 3) continue
+    if (ring.length < 3) continue // if for some reason...
     for (var i = 0; i < coordinates.length; i++) {
       if (ringInsideRing(pip, ring, coordinates[i][0])) {
         coordinates[i].push(ring)
