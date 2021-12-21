@@ -74,19 +74,19 @@ function walk(pip, coordinates, out, start, get, mode) {
   while ((index = firstNodeOfInterest(nodes, start)) !== start) {
     var n = nodes[index]
     if (mode === 'intersect' && n.loop && !n.inside) {
-      n.visited = true
+      visitLoop(nodes, index)
       continue
     }
     if (mode === 'union' && n.loop && n.inside) {
-      n.visited = true
+      visitLoop(nodes, index)
       continue
     }
     if (mode === 'difference' && n.loop && !n.inside && index >= out.la) {
-      n.visited = true
+      visitLoop(nodes, index)
       continue
     }
     if (mode === 'difference' && n.loop && n.inside && index < out.la) {
-      n.visited = true
+      visitLoop(nodes, index)
       continue
     }
     var ring = []
@@ -105,13 +105,24 @@ function walk(pip, coordinates, out, start, get, mode) {
     }
     if (ring.length < 3) continue // if for some reason...
     for (var i = 0; i < coordinates.length; i++) {
-      if (ringInsideRing(pip, ring, coordinates[i][0])) {
+      if (ringInsideRings(pip, ring, coordinates[i])) {
         coordinates[i].push(ring)
         break
       }
     }
     if (i === coordinates.length) coordinates.push([ring])
   }
+}
+
+function visitLoop(nodes, index) {
+  var i = index
+  var n = nodes[i]
+  n.visited = true
+  do {
+    i = n.next
+    n = nodes[i]
+    n.visited = true
+  } while (i !== index)
 }
 
 function ptEq(a,b,epsilon) {
@@ -121,16 +132,22 @@ function ptEq(a,b,epsilon) {
   return true
 }
 
-function ringInsideRing(pip, r0, r1) {
-  // find first point in r0 not equal to any point in r1
-  for (var i = 0; i < r0.length; i++) {
-    for (var j = 0; j < r1.length; j++) {
-      if (ptEq(r0[i],r1[j])) {
-        break
+function ringInsideRings(pip, ring, P) {
+  // find first point in ring not equal to any point in P
+  for (var i = 0; i < ring.length; i++) {
+    J: for (var j = 0; j < P.length; j++) {
+      for (var k = 0; k < P[j].length; k++) {
+        if (ptEq(ring[i],P[j][k])) {
+          break J
+        }
       }
     }
-    if (j === r1.length) break
+    if (j === P.length) break
   }
-  if (i === r0.length) return false // same ring
-  return pip(r0[i], r1)
+  if (i === ring.length) return false // same ring
+  if (!pip(ring[i], P[0])) return false
+  for (var j = 1; j < P.length; j++) {
+    if (pip(ring[i],P[j])) return false
+  }
+  return true
 }
