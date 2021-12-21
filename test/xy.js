@@ -1,25 +1,22 @@
 var test = require('tape')
 var peq = require('polygon-eq')
 var pclip = require('../')
-var xyz = {
-  intersect: require('line-segment-intersect-2d'),
-  pointInPolygon: require('point-in-polygon'),
-  distance: require('gl-vec2/distance'),
-}
+var xy = require('../xy')
+
 test('two triangles cartesian clip', function (t) {
   var A = [[0,0],[5,8],[10,0]]
   var B = [[5,4],[10,12],[10,4]]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ]), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
     [ [ [ 6.25, 6 ], [ 10, 12 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
   ]), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 10, 12 ], [ 10, 4 ], [ 7.5, 4 ], [ 10, 0 ], [ 0, 0 ], [ 5, 8 ] ] ],
   ]), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 10, 0 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ]), 'difference')
   t.end()
@@ -28,19 +25,19 @@ test('two triangles cartesian clip', function (t) {
 test('one triangle completely inside of another', function (t) {
   var A = [[0,0],[5,8],[10,0]]
   var B = [[1,1],[2,2],[3,1]]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[1,1],[2,2],[3,1]]],
   ]), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [
       [[0,0],[5,8],[10,0]],
       [[1,1],[2,2],[3,1]],
     ],
   ]), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [[[0,0],[5,8],[10,0]]]
   ]), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [
       [[0,0],[5,8],[10,0]],
       [[1,1],[2,2],[3,1]],
@@ -55,23 +52,23 @@ test('subject triangle with hole, clip triangle with hole not clipped', function
     [[1,1],[2,2],[3,1]],
   ]
   var B = [[5,4],[10,12],[10,4]]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[6.25,6],[7.5,4],[5,4]]],
   ]), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [
       [[6.25,6],[5,8],[0,0],[10,0],[7.5,4],[5,4]],
       [[1,1],[2,2],[3,1]],
     ],
     [[[6.25,6],[10,12],[10,4],[7.5,4]]],
   ]), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [[6.25,6],[10,12],[10,4],[7.5,4],[10,0],[0,0],[5,8]],
       [[1,1],[2,2],[3,1]],
     ],
   ]), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [
       [[6.25,6],[5,8],[0,0],[10,0],[7.5,4],[5,4]],
       [[1,1],[2,2],[3,1]],
@@ -87,22 +84,22 @@ test('simple cartesian polygons', function (t) {
   var B = [
     [5,4],[10,12],[15,-2],[7,-2],[10,4]
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
     [ [ [ 8.889, 1.778 ], [ 10, 0 ], [ 8, 0 ] ] ],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
     [ [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 10, 0 ],
       [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ] ],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [ [ 6.25, 6 ], [ 10, 12 ], [ 15, -2 ], [ 7, -2 ], [ 8, 0 ], [ 0, 0 ], [ 5, 8 ] ],
       [ [ 8.889, 1.778 ], [ 10, 4 ], [ 7.5, 4 ] ],
     ],
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [ [ [ 6.25, 6 ], [ 5, 8 ], [ 0, 0 ], [ 8, 0 ], [ 8.889, 1.778 ], [ 7.5, 4 ], [ 5, 4 ] ] ],
   ], 1e-3), 'difference')
   t.end()
@@ -122,14 +119,14 @@ test('cartesian polygons with holes', function (t) {
       [[+2,+4],[+3,+4],[+3,+3],[+2,+3]],
     ],
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[
       [-2,+1],[-2,+2],[-1,+3],[+1/3,+3],[+1,+1],[+2,+1],[+2,-1],[+1.2,-1],
       [+1.5,+0.5],[+0.5,+0.5],[-1,+2],
     ]],
     [[[-2,+0],[-0.2,+0],[+0.4,-1],[+0,-1],[+0,-2],[-1,-2],[-2,-1]]]
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[-2,2],[-5,-1],[-4,-2],[-1,-2],[-2,-1],[-2,0],[-3,0],[-2,1]]],
     [[[-1,3],[0,4],[1/3,3]]],
     [[[-1,3],[-2,3],[-2,2]]],
@@ -142,7 +139,7 @@ test('cartesian polygons with holes', function (t) {
     ],
     [[[-2,0],[-2,1],[-1,2],[0.5,0.5],[-0.5,0.5],[-0.2,0]]]
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [
         [-1,+3],[-2,+3],[-2,+2],[-5,-1],[-4,-2],[-1,-2],[+0,-3],[+2,-2],
@@ -155,7 +152,7 @@ test('cartesian polygons with holes', function (t) {
       [[+2,+3],[+2,+4],[+3,+4],[+3,+3]],
     ]
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[-2,+2],[-5,-1],[-4,-2],[-1,-2],[-2,-1],[-2,+0],[-3,+0],[-2,+1]]],
     [[[-1,+3],[+0,+4],[+1/3,+3]]],
     [[[-0.2,+0],[+1,+0],[+0.5,+0.5],[+1.5,+0.5],[+1.2,-1],[+0.4,-1]]],
@@ -170,22 +167,22 @@ test('2 triangles in subject, 1 triangle in clip', function (t) {
     [[[3,-2],[6,4],[9,-2]]]
   ]
   var B = [[0,0],[3,4],[6,0]]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[1.5,2],[3,2],[15/7,20/7]]],
     [[[4,0],[4.8,1.6],[6,0]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[0,0],[1.5,2],[3,2],[15/7,20/7],[3,4],[4.8,1.6],[4,0]]],
     [[[0,2],[1.5,2],[15/7,20/7],[1,4]]],
     [[[3,-2],[4,0],[6,0],[4.8,1.6],[6,4],[9,-2]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [0,2],[1,4],[15/7,20/7],[3,4],[4.8,1.6],[6,4],[9,-2],[3,-2],
       [4,0],[0,0],[1.5,2]
     ]
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[0,2],[1,4],[15/7,20/7],[1.5,2]]],
     [[[3,-2],[4,0],[6,0],[4.8,1.6],[6,4],[9,-2]]],
   ], 1e-3), 'difference')
@@ -198,22 +195,22 @@ test('1 triangle in subject, 2 triangles in clip', function (t) {
     [[[0,2],[3,2],[1,4]]],
     [[[3,-2],[6,4],[9,-2]]]
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[1.5,2],[3,2],[15/7,20/7]]],
     [[[4,0],[4.8,1.6],[6,0]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[0,0],[1.5,2],[3,2],[15/7,20/7],[3,4],[4.8,1.6],[4,0]]],
     [[[0,2],[1.5,2],[15/7,20/7],[1,4]]],
     [[[3,-2],[4,0],[6,0],[4.8,1.6],[6,4],[9,-2]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [0,2],[1,4],[15/7,20/7],[3,4],[4.8,1.6],[6,4],[9,-2],[3,-2],
       [4,0],[0,0],[1.5,2]
     ]
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[0,0],[1.5,2],[3,2],[15/7,20/7],[3,4],[4.8,1.6],[4,0]]]
   ], 1e-3), 'difference')
   t.end()
@@ -228,12 +225,12 @@ test('2 triangles in subject, 2 triangles in clip', function (t) {
     [[[-1,-1],[+0,+1],[+1,-1]]],
     [[[-2,+2],[+2,+2],[+0,+5]]],
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[-2,+2],[-5/3,+2.5],[-4/3,+2]]],
     [[[+0,+0],[-2/7,+3/7],[-0.5,+0]]],
     [[[+0,+3],[+0.5,+2],[+1.5,+2],[+12/7,+17/7],[+4/3,+3]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[-4,+0],[-2,+3],[-5/3,+2.5],[-2,+2],[-4/3,+2],[-2/7,3/7],[-0.5,+0]]],
     [[[+0.5,+2],[+1,+1],[+1.5,+2]]],
     [[[+4/3,+3],[+2,+3],[+12/7,+17/7]]],
@@ -241,14 +238,14 @@ test('2 triangles in subject, 2 triangles in clip', function (t) {
     [[[-5/3,+2.5],[+0,+5],[+4/3,+3],[+0,+3],[+0.5,+2],[-4/3,+2]]],
     [[[+1.5,+2],[+2,+2],[+12/7,+17/7]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [[
       [-4,+0],[-2,+3],[-5/3,+2.5],[+0,+5],[+4/3,+3],[+2,+3],[+12/7,+17/7],
       [+2,+2],[+1.5,+2],[+1,+1],[+0.5,+2],[-4/3,+2],[-2/7,+3/7],[+0,+1],
       [+1,-1],[-1,-1],[-0.5,+0]
     ]]
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[-4,+0],[-2,+3],[-5/3,+2.5],[-2,+2],[-4/3,+2],[-2/7,3/7],[-0.5,+0]]],
     [[[+0.5,+2],[+1,+1],[+1.5,+2]]],
     [[[+4/3,+3],[+2,+3],[+12/7,+17/7]]],
@@ -269,12 +266,12 @@ test('4 triangles in subject, 4 triangles in clip with half non-intersecting tri
     [[[-10,+5],[-9,+6],[-8,+5]]],
     [[[-1,-10],[+0,-9],[+1,-10]]],
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[-2,+2],[-5/3,+2.5],[-4/3,+2]]],
     [[[+0,+0],[-2/7,+3/7],[-0.5,+0]]],
     [[[+0,+3],[+0.5,+2],[+1.5,+2],[+12/7,+17/7],[+4/3,+3]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[-4,+0],[-2,+3],[-5/3,+2.5],[-2,+2],[-4/3,+2],[-2/7,3/7],[-0.5,+0]]],
     [[[+0.5,+2],[+1,+1],[+1.5,+2]]],
     [[[+4/3,+3],[+2,+3],[+12/7,+17/7]]],
@@ -286,7 +283,7 @@ test('4 triangles in subject, 4 triangles in clip with half non-intersecting tri
     [[[-10,+5],[-9,+6],[-8,+5]]],
     [[[-1,-10],[+0,-9],[+1,-10]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [[
       [-4,+0],[-2,+3],[-5/3,+2.5],[+0,+5],[+4/3,+3],[+2,+3],[+12/7,+17/7],
       [+2,+2],[+1.5,+2],[+1,+1],[+0.5,+2],[-4/3,+2],[-2/7,+3/7],[+0,+1],
@@ -297,7 +294,7 @@ test('4 triangles in subject, 4 triangles in clip with half non-intersecting tri
     [[[-10,+5],[-9,+6],[-8,+5]]],
     [[[-1,-10],[+0,-9],[+1,-10]]],
   ], 1e-3), 'union')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[-4,+0],[-2,+3],[-5/3,+2.5],[-2,+2],[-4/3,+2],[-2/7,3/7],[-0.5,+0]]],
     [[[+0.5,+2],[+1,+1],[+1.5,+2]]],
     [[[+4/3,+3],[+2,+3],[+12/7,+17/7]]],
@@ -329,7 +326,7 @@ test('multiple polygons with holes', function (t) {
       [[-4,-1],[-2.5,+0.5],[-2.5,-1]],
     ],
   ]
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[-10/3,+2/3],[-3,+1],[-2,+1],[-2,+0],[-2.5,+0.25],[-2.5,+0.5],[-8/3,+1/3]]],
     [
       [
@@ -342,7 +339,7 @@ test('multiple polygons with holes', function (t) {
     [[[+1,-1.5],[19/9,-16/9],[+2,-2]]],
     [[[-29/9,-29/9],[-3,-3],[+2.75,-3],[+2,-4],[-0.5,-4]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [-3,-3],[-4,-3],[-29/9,-29/9],[-4,-4],[-0.5,-4],[+3,-5],[+4,-3],[+2.75,-3],
       [+5,0],[+5,+4],[+10/3,+4],[+3,+5],[-3,+4],[-4,+1],[-10/3,+2/3],[-4,+0],[-5,-2],
@@ -356,7 +353,7 @@ test('multiple polygons with holes', function (t) {
     [[+15/7,+9/7],[+2.5,+2],[+3,+1]],
     [[+2,-0.7],[+11/9,-7/9],[+1,-1],[+2,-1]],
   ], 1e-3), 'union')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [[[-3,-3],[-4,-3],[-29/9,-29/9]]],
     [[[2.75,-3],[4,-3],[3,-5],[-0.5,-4],[2,-4]]],
     [
@@ -376,7 +373,7 @@ test('multiple polygons with holes', function (t) {
     [[[15/7,9/7],[2.5,2],[2,3],[0,3],[0,2]]],
     [[[-10/3,2/3],[-4,0],[-5,-2],[-3,-2],[-2,-1],[-2,0],[-2.5,0.25],[-2.5,-1],[-4,-1],[-8/3,1/3]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[-3,-3],[-4,-3],[-29/9,-29/9]]],
     [[[2.75,-3],[4,-3],[3,-5],[-0.5,-4],[2,-4]]],
     [
@@ -409,7 +406,7 @@ test('inside loops', function (t) {
       [[+0,+2.5],[+2.5,+2.5],[+2.5,-0.5]],
     ],
   ]
-  t.ok(peq(pclip.union(A,B,xyz), [
+  t.ok(peq(pclip.union(A,B,xy), [
     [
       [[-5,-5],[-5,+5],[+5,+5],[+5,-5]],
       [[-3,+4],[+4,+4],[+4,-4]],
@@ -420,7 +417,7 @@ test('inside loops', function (t) {
     ],
     [[[+2,+2],[+1,+2],[+2,+1]]],
   ], 1e-3), 'union')
-  t.ok(peq(pclip.exclude(A,B,xyz), [
+  t.ok(peq(pclip.exclude(A,B,xy), [
     [
       [[-5,-5],[-5,+5],[+5,+5],[+5,-5]],
       [[-3,+4],[+4,+4],[+4,-4]],
@@ -436,14 +433,14 @@ test('inside loops', function (t) {
       [[+0,+2.5],[+2.5,+2.5],[+2.5,-0.5]],
     ],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.intersect(A,B,xyz), [
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [
       [[-4,+4],[-4,-4],[+3,-4]],
       [[-3,+1],[-3,-3],[+1,-3]],
     ],
     [[[-2,-1],[-2,-2],[-1,-2]]],
   ], 1e-3), 'intersect')
-  t.ok(peq(pclip.difference(A,B,xyz), [
+  t.ok(peq(pclip.difference(A,B,xy), [
     [
       [[-5,-5],[-5,+5],[+5,+5],[+5,-5]],
       [[-3,+4],[+4,+4],[+4,-4]],
