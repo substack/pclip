@@ -1,7 +1,7 @@
 var pclip = require('../')
+var opts = require('../geo')
 var A = [[0,0],[5,8],[10,0]]
 var B = [[5,4],[10,12],[10,4]]
-var opts = require('pclip/geo')
 
 console.log('intersect', show(pclip.intersect(A,B,opts)))
 console.log('exclude', show(pclip.exclude(A,B,opts)))

@@ -12,9 +12,9 @@ clipping based on [greiner-hormann algorithm](https://davis.wpi.edu/~matt/course
 
 ``` js
 var pclip = require('pclip')
+var opts = require('pclip/geo') // geodetic (lon,lat) coordinates
 var A = [[0,0],[5,8],[10,0]]
 var B = [[5,4],[10,12],[10,4]]
-var opts = require('pclip/geo') // geodetic (lon,lat) coordinates
 
 console.log('intersect', show(pclip.intersect(A,B,opts)))
 console.log('exclude', show(pclip.exclude(A,B,opts)))
