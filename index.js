@@ -23,6 +23,10 @@ module.exports.difference = function difference(A, B, opts) {
   if (!opts) opts = mopts
   return clip(A, B, opts, 'difference')
 }
+module.exports.divide = function divide(A, B, opts) {
+  if (!opts) opts = mopts
+  return clip(A, B, opts, 'divide')
+}
 
 function clip(A, B, opts, mode) {
   out.npoints = []
@@ -33,19 +37,18 @@ function clip(A, B, opts, mode) {
 
 function firstNodeOfInterest(nodes, start) {
   var i = start, pstart = start, n = nodes[i]
-  while (true) {
+  do {
     i = n.next
     n = nodes[i]
-    if (n.intersect && !n.visited) break
-    if (n.loop && !n.visited) break
+    if (n.intersect && !n.visited) return i
+    if (n.loop && !n.visited) return i
     if (i === pstart) {
       i = n.nextPolygon
       pstart = i
       n = nodes[i]
     }
-    if (i === start) return -1
-  }
-  return i
+  } while (i !== start)
+  return -1
 }
 
 function clipNodes(out, A, B, opts, mode) {
@@ -57,7 +60,12 @@ function clipNodes(out, A, B, opts, mode) {
   var pip = opts.pointInPolygon
   var coordinates = []
   walk(pip, coordinates, out, 0, get, mode, epsilon)
-  if (mode === 'exclude') {
+  if (mode === 'divide') {
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].visited = false
+    }
+    flipEntry(nodes, 0) // emulates re-marking as intersect
+  } else if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i]
       n.visited = false
@@ -66,6 +74,20 @@ function clipNodes(out, A, B, opts, mode) {
   }
   walk(pip, coordinates, out, la, get, mode, epsilon)
   return coordinates
+}
+
+function flipEntry(nodes, start) {
+  var i = start, pstart = start, n = nodes[i]
+  do {
+    if (n.intersect) n.entry = !n.entry
+    i = n.next
+    n = nodes[i]
+    if (i === pstart) {
+      i = n.nextPolygon
+      pstart = i
+      n = nodes[i]
+    }
+  } while (i !== start)
 }
 
 function getPoint(nodes,i) {
@@ -87,11 +109,11 @@ function walk(pip, coordinates, out, start, get, mode, epsilon) {
       visitLoop(nodes, index)
       continue
     }
-    if (mode === 'difference' && n.loop && !n.inside && index >= out.la) {
+    if ((mode === 'difference' || mode === 'divide') && n.loop && !n.inside && index >= out.la) {
       visitLoop(nodes, index)
       continue
     }
-    if (mode === 'difference' && n.loop && n.inside && index < out.la) {
+    if ((mode === 'difference' || mode === 'divide') && n.loop && n.inside && index < out.la) {
       visitLoop(nodes, index)
       continue
     }

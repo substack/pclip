@@ -7,6 +7,7 @@ console.log('intersect', show(geoclip.intersect(A,B,opts)))
 console.log('exclude', show(geoclip.exclude(A,B,opts)))
 console.log('union', show(geoclip.union(A,B,opts)))
 console.log('difference', show(geoclip.difference(A,B,opts)))
+console.log('divide', show(geoclip.divide(A,B,opts)))
 
 function show(cs) {
   return '[\n' + cs.map(rings => '  ' + JSON.stringify(rings)).join(',\n') + '\n]'
