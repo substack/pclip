@@ -58,8 +58,8 @@ function clipNodes(out, A, B, opts, mode) {
   var epsilon = opts.epsilon !== undefined ? opts.epsilon : 1e-8
   var la = out.la, lb = out.lb
   var pip = opts.pointInPolygon
-  var coordinates = []
-  walk(pip, coordinates, out, 0, get, mode, epsilon)
+  var coordinates = [], holeQueue = []
+  walk(pip, coordinates, holeQueue, out, 0, get, mode, epsilon)
   if (mode === 'divide') {
     for (var i = 0; i < nodes.length; i++) {
       nodes[i].visited = false
@@ -72,7 +72,12 @@ function clipNodes(out, A, B, opts, mode) {
       if (n.intersect) n.entry = !n.entry
     }
   }
-  walk(pip, coordinates, out, la, get, mode, epsilon)
+  walk(pip, coordinates, holeQueue, out, la, get, mode, epsilon)
+  if (holeQueue.length > 0) {
+    for (var i = 0; i < holeQueue.length; i++) {
+      insertRing(pip, coordinates, holeQueue[i], epsilon)
+    }
+  }
   return coordinates
 }
 
@@ -94,30 +99,29 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(pip, coordinates, out, start, get, mode, epsilon) {
+function walk(pip, coordinates, holeQueue, out, start, get, mode, epsilon) {
   var index = start
   var nodes = out.nodes
   while (true) {
     index = firstNodeOfInterest(nodes, index)
     if (index < 0) break
     var n = nodes[index]
-    if (mode === 'intersect' && n.loop && !n.inside) {
+    if (mode === 'divide' && n.inside && n.loop && n.hole) {
+    } else if (mode === 'intersect' && n.loop && !n.inside) {
       visitLoop(nodes, index)
       continue
-    }
-    if (mode === 'union' && n.loop && n.inside) {
+    } else if (mode === 'union' && n.loop && n.inside) {
       visitLoop(nodes, index)
       continue
-    }
-    if ((mode === 'difference' || mode === 'divide') && n.loop && !n.inside && index >= out.la) {
+    } else if ((mode === 'difference' || mode === 'divide') && n.loop && !n.inside && index >= out.la) {
       visitLoop(nodes, index)
       continue
-    }
-    if ((mode === 'difference' || mode === 'divide') && n.loop && n.inside && index < out.la) {
+    } else if ((mode === 'difference' || mode === 'divide') && n.loop && n.inside && index < out.la) {
       visitLoop(nodes, index)
       continue
     }
     var ring = []
+    var isHole = mode === 'divide' && n.loop && n.inside && n.hole
     for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
@@ -132,14 +136,21 @@ function walk(pip, coordinates, out, start, get, mode, epsilon) {
       }
     }
     if (ring.length < 3) continue // if for some reason...
-    for (var i = 0; i < coordinates.length; i++) {
-      if (ringInsideRings(pip, ring, coordinates[i], epsilon)) {
-        coordinates[i].push(ring)
-        break
-      }
+    if (!insertRing(pip, coordinates, ring, epsilon)) {
+      if (isHole) holeQueue.push(ring)
+      else coordinates.push([ring])
     }
-    if (i === coordinates.length) coordinates.push([ring])
   }
+}
+
+function insertRing(pip, coordinates, ring, epsilon) {
+  for (var i = 0; i < coordinates.length; i++) {
+    if (ringInsideRings(pip, ring, coordinates[i], epsilon)) {
+      coordinates[i].push(ring)
+      return true
+    }
+  }
+  return false
 }
 
 function visitLoop(nodes, index) {

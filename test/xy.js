@@ -497,7 +497,6 @@ test('multiple polygons with holes', function (t) {
     [[[51/19,-12/19],[19/9,-16/9],[1,-1.5],[-1/6,-11/12],[11/9,-7/9],[1,-1],[2,-1],[2,-0.7]]],
     [[[-2.5,0.25],[-8/3,1/3],[-2.5,0.5]]],
   ], 1e-3), 'difference')
-  console.dir(pclip.divide(A,B,xy), { depth: 100 })
   t.ok(peq(pclip.divide(A,B,xy), [
     [[[-3,-3],[-4,-3],[-29/9,-29/9]]],
     [[[2.75,-3],[4,-3],[3,-5],[-0.5,-4],[2,-4]]],
@@ -524,7 +523,6 @@ test('multiple polygons with holes', function (t) {
   t.end()
 })
 
-return
 test('inside loops', function (t) {
   var A = [
     [
