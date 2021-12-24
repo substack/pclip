@@ -1,7 +1,6 @@
 // https://davis.wpi.edu/~matt/courses/clipping/
 
 var calcNodes = require('./lib/nodes.js')
-var ptEq = require('./lib/pteq.js')
 var mopts = {}
 var out = { npoints: [], nodes: [], la: 0, lb: 0 }
 
@@ -66,11 +65,12 @@ function firstNodeOfInterest(nodes, start) {
 function clipNodes(coordinates, out, A, B, opts, mode) {
   var nodes = out.nodes, C = out.npoints
   var get = opts.get || getPoint
+  var distance = opts.distance
   if (mode === undefined) mode = opts.mode
   var epsilon = opts.epsilon !== undefined ? opts.epsilon : 1e-8
   var la = out.la, lb = out.lb
   var pip = opts.pointInPolygon
-  walk(pip, coordinates, out, 0, get, mode, epsilon)
+  walk(pip, coordinates, out, 0, get, mode, epsilon, distance)
   if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i]
@@ -78,7 +78,7 @@ function clipNodes(coordinates, out, A, B, opts, mode) {
       if (n.intersect) n.entry = !n.entry
     }
   }
-  walk(pip, coordinates, out, la, get, mode, epsilon)
+  walk(pip, coordinates, out, la, get, mode, epsilon, distance)
   return coordinates
 }
 
@@ -100,7 +100,7 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(pip, coordinates, out, start, get, mode, epsilon) {
+function walk(pip, coordinates, out, start, get, mode, epsilon, distance) {
   var index = start
   var nodes = out.nodes
   while (true) {
@@ -136,7 +136,7 @@ function walk(pip, coordinates, out, start, get, mode, epsilon) {
     }
     if (ring.length < 3) continue // if for some reason...
     for (var i = 0; i < coordinates.length; i++) {
-      if (ringInsideRings(pip, ring, coordinates[i], epsilon)) {
+      if (ringInsideRings(pip, ring, coordinates[i], epsilon, distance)) {
         coordinates[i].push(ring)
         break
       }
@@ -156,12 +156,12 @@ function visitLoop(nodes, index) {
   } while (i !== index)
 }
 
-function ringInsideRings(pip, ring, P, epsilon) {
+function ringInsideRings(pip, ring, P, epsilon, distance) {
   // find first point in ring not equal to any point in P
   for (var i = 0; i < ring.length; i++) {
     J: for (var j = 0; j < P.length; j++) {
       for (var k = 0; k < P[j].length; k++) {
-        if (ptEq(ring[i],P[j][k],epsilon)) {
+        if (distance(ring[i],P[j][k]) <= epsilon) {
           break J
         }
       }

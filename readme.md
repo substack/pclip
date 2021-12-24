@@ -101,7 +101,8 @@ and you can optionally provide:
 * `opts.get(nodes,i)` - map the array of nodes and the node inex to the result type.
   by default, this is `nodes[i].point` but you can supply extra information here such as the index
   to determine if for example an edge is from the original polygon or a result of clipping.
-* `opts.epsilon` - used internally to know if 2 points are equal. default: `1e-8`
+* `opts.epsilon` - two points are considered equal when `opts.distance(A,B) <= epsilon`.
+  default: `1e-8`
 
 ## pclip.union(A, B, opts)
 
