@@ -4,7 +4,7 @@ pluggable polygon clipping with multipolygon and hole support
 
 Pretty much all polygon clipping libraries will give you operations in cartesian space, but with
 this module you can also perform clipping on for example geodetic (lon,lat) coordinates with edges
-along great circle arcs.
+along great circle arcs. Or you could clip using robust or rational arithmetic.
 
 clipping based on [greiner-hormann algorithm](https://davis.wpi.edu/~matt/courses/clipping/)
 
@@ -52,7 +52,7 @@ Everything works the same whether or not there is a duplicate last point.
 
 You must provide:
 
-* `opts.mode` must be one of: `'union'`, `'difference'`, `'intersect'`, `'exclude'`
+* `opts.mode` must be one of: `'union'`, `'difference'`, `'intersect'`, `'exclude'`, `'divide'`
 * `opts.intersect(out, A, B, C, D)` - calculate the intersection between line segments AB and CD,
   storing the result in `out`. `A`, `B`, `C`, `D`, and `out` are 2-element arrays.
 * `opts.pointInPolygon(point, polygon)` - return whether `point` (2-item array)
@@ -84,6 +84,10 @@ alias for `pclip(A, B, Object.assign({ mode: 'intersect' }, opts))`
 ## pclip.exclude(A, B, opts)
 
 alias for `pclip(A, B, Object.assign({ mode: 'exclude' }, opts))`
+
+## pclip.divide(A, B, opts)
+
+alias for `pclip(A, B, Object.assign({ mode: 'divide' }, opts))`
 
 # install
 
