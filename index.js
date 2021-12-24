@@ -2,7 +2,7 @@
 
 var calcNodes = require('./lib/nodes.js')
 var mopts = {}
-var out = { npoints: [], nodes: [], la: 0, lb: 0 }
+var out = { nodes: [], la: 0, lb: 0 }
 
 module.exports = clip
 
@@ -28,7 +28,6 @@ module.exports.divide = function divide(A, B, opts) {
 }
 
 function clip(A, B, opts, mode) {
-  out.npoints = []
   out.nodes = []
   if (mode === undefined) mode = opts.mode
   calcNodes(out, A, B, opts, mode)
@@ -63,7 +62,7 @@ function firstNodeOfInterest(nodes, start) {
 }
 
 function clipNodes(coordinates, out, A, B, opts, mode) {
-  var nodes = out.nodes, C = out.npoints
+  var nodes = out.nodes
   var get = opts.get || getPoint
   var distance = opts.distance
   if (mode === undefined) mode = opts.mode
