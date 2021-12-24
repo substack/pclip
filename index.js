@@ -34,15 +34,16 @@ function clip(A, B, opts, mode) {
   if (mode === undefined) mode = opts.mode
   calcNodes(out, A, B, opts, mode)
   if (mode === 'divide') {
-    var a = clipNodes(out, A, B, opts, 'difference')
+    var coordinates = []
+    clipNodes(coordinates, out, A, B, opts, 'difference')
     flipEntry(out.nodes, 0) // emulates re-marking as intersect
     for (var i = 0; i < out.nodes.length; i++) {
       out.nodes[i].visited = false
     }
-    var b = clipNodes(out, A, B, opts, 'intersect')
-    return a.concat(b)
+    clipNodes(coordinates, out, A, B, opts, 'intersect')
+    return coordinates
   } else {
-    return clipNodes(out, A, B, opts, mode)
+    return clipNodes([], out, A, B, opts, mode)
   }
 }
 
@@ -62,33 +63,22 @@ function firstNodeOfInterest(nodes, start) {
   return -1
 }
 
-function clipNodes(out, A, B, opts, mode) {
+function clipNodes(coordinates, out, A, B, opts, mode) {
   var nodes = out.nodes, C = out.npoints
   var get = opts.get || getPoint
   if (mode === undefined) mode = opts.mode
   var epsilon = opts.epsilon !== undefined ? opts.epsilon : 1e-8
   var la = out.la, lb = out.lb
   var pip = opts.pointInPolygon
-  var coordinates = [], holeQueue = []
-  walk(pip, coordinates, holeQueue, out, 0, get, mode, epsilon)
-  if (mode === 'divide') {
-    for (var i = 0; i < nodes.length; i++) {
-      nodes[i].visited = false
-    }
-    flipEntry(nodes, 0) // emulates re-marking as intersect
-  } else if (mode === 'exclude') {
+  walk(pip, coordinates, out, 0, get, mode, epsilon)
+  if (mode === 'exclude') {
     for (var i = 0; i < nodes.length; i++) {
       var n = nodes[i]
       n.visited = false
       if (n.intersect) n.entry = !n.entry
     }
   }
-  walk(pip, coordinates, holeQueue, out, la, get, mode, epsilon)
-  if (holeQueue.length > 0) {
-    for (var i = 0; i < holeQueue.length; i++) {
-      insertRing(pip, coordinates, holeQueue[i], epsilon)
-    }
-  }
+  walk(pip, coordinates, out, la, get, mode, epsilon)
   return coordinates
 }
 
@@ -110,21 +100,14 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(pip, coordinates, holeQueue, out, start, get, mode, epsilon) {
+function walk(pip, coordinates, out, start, get, mode, epsilon) {
   var index = start
   var nodes = out.nodes
   while (true) {
     index = firstNodeOfInterest(nodes, index)
     if (index < 0) break
     var n = nodes[index]
-    if (mode === 'divide' && n.inside && n.loop && n.hole) {
-    } else if (mode === 'divide' && n.loop && !n.inside && index >= out.la) {
-      visitLoop(nodes, index)
-      continue
-    } else if (mode === 'divide' && n.loop && n.inside && index < out.la) {
-      visitLoop(nodes, index)
-      continue
-    } else if (mode === 'intersect' && n.loop && !n.inside) {
+    if (mode === 'intersect' && n.loop && !n.inside) {
       visitLoop(nodes, index)
       continue
     } else if (mode === 'union' && n.loop && n.inside) {
@@ -138,7 +121,6 @@ function walk(pip, coordinates, holeQueue, out, start, get, mode, epsilon) {
       continue
     }
     var ring = []
-    var isHole = mode === 'divide' && n.loop && n.inside && n.hole
     for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
@@ -153,21 +135,14 @@ function walk(pip, coordinates, holeQueue, out, start, get, mode, epsilon) {
       }
     }
     if (ring.length < 3) continue // if for some reason...
-    if (!insertRing(pip, coordinates, ring, epsilon)) {
-      if (isHole) holeQueue.push(ring)
-      else coordinates.push([ring])
+    for (var i = 0; i < coordinates.length; i++) {
+      if (ringInsideRings(pip, ring, coordinates[i], epsilon)) {
+        coordinates[i].push(ring)
+        break
+      }
     }
+    if (i === coordinates.length) coordinates.push([ring])
   }
-}
-
-function insertRing(pip, coordinates, ring, epsilon) {
-  for (var i = 0; i < coordinates.length; i++) {
-    if (ringInsideRings(pip, ring, coordinates[i], epsilon)) {
-      coordinates[i].push(ring)
-      return true
-    }
-  }
-  return false
 }
 
 function visitLoop(nodes, index) {
