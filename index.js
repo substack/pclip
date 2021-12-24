@@ -31,8 +31,19 @@ module.exports.divide = function divide(A, B, opts) {
 function clip(A, B, opts, mode) {
   out.npoints = []
   out.nodes = []
+  if (mode === undefined) mode = opts.mode
   calcNodes(out, A, B, opts, mode)
-  return clipNodes(out, A, B, opts, mode)
+  if (mode === 'divide') {
+    var a = clipNodes(out, A, B, opts, 'difference')
+    flipEntry(out.nodes, 0) // emulates re-marking as intersect
+    for (var i = 0; i < out.nodes.length; i++) {
+      out.nodes[i].visited = false
+    }
+    var b = clipNodes(out, A, B, opts, 'intersect')
+    return a.concat(b)
+  } else {
+    return clipNodes(out, A, B, opts, mode)
+  }
 }
 
 function firstNodeOfInterest(nodes, start) {
@@ -107,16 +118,22 @@ function walk(pip, coordinates, holeQueue, out, start, get, mode, epsilon) {
     if (index < 0) break
     var n = nodes[index]
     if (mode === 'divide' && n.inside && n.loop && n.hole) {
+    } else if (mode === 'divide' && n.loop && !n.inside && index >= out.la) {
+      visitLoop(nodes, index)
+      continue
+    } else if (mode === 'divide' && n.loop && n.inside && index < out.la) {
+      visitLoop(nodes, index)
+      continue
     } else if (mode === 'intersect' && n.loop && !n.inside) {
       visitLoop(nodes, index)
       continue
     } else if (mode === 'union' && n.loop && n.inside) {
       visitLoop(nodes, index)
       continue
-    } else if ((mode === 'difference' || mode === 'divide') && n.loop && !n.inside && index >= out.la) {
+    } else if (mode === 'difference' && n.loop && !n.inside && index >= out.la) {
       visitLoop(nodes, index)
       continue
-    } else if ((mode === 'difference' || mode === 'divide') && n.loop && n.inside && index < out.la) {
+    } else if (mode === 'difference' && n.loop && n.inside && index < out.la) {
       visitLoop(nodes, index)
       continue
     }
