@@ -1,6 +1,6 @@
 {
   "name": "pclip",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "pluggable polygon clipping with multipolygon and hole support",
   "dependencies": {
     "geo-point-in-polygon": "^1.0.0",
