@@ -771,3 +771,41 @@ test('ignore first=last depth=4', function (t) {
   ], 1e-3), 'swapped divide')
   t.end()
 })
+
+test('duplicate last=first point', function (t) {
+  var A = [[0,0],[5,8],[10,0]]
+  var B = [[5,4],[10,12],[10,4]]
+  var opts = Object.assign({ duplicate: true }, xy)
+  var ri = pclip.intersect(A,B,opts)
+  t.ok(peq(ri,[[[[6.25,6],[7.5,4],[5,4]]]], 1e-3), 'intersect')
+  t.deepEqual(ri[0][0][0], ri[0][0][ri[0][0].length-1], 'intersect first=last')
+  var re = pclip.exclude(A,B,opts)
+  t.ok(peq(re, [
+    [[[6.25,6],[5,8],[0,0],[10,0],[7.5,4],[5,4]]],
+    [[[6.25,6],[10,12],[10,4],[7.5,4]]],
+  ], 1e-3), 'exclude')
+  t.deepEqual(re[0][0][0], re[0][0][re[0][0].length-1], 'exclude first=last')
+  var ru = pclip.union(A,B,opts)
+  t.ok(peq(ru, [
+    [[[6.25,6],[10,12],[10,4],[7.5,4],[10,0],[0,0],[5,8]]],
+  ]), 'union')
+  t.deepEqual(ru[0][0][0], ru[0][0][ru[0][0].length-1], 'union first=last')
+  var rd = pclip.difference(A,B,opts)
+  t.ok(peq(rd, [
+    [[[6.25,6],[5,8],[0,0],[10,0],[7.5,4],[5,4]]],
+  ]), 'difference')
+  t.deepEqual(rd[0][0][0], rd[0][0][rd[0][0].length-1], 'difference first=last')
+  var rdv = pclip.divide(A,B,opts)
+  t.ok(peq(rdv, [
+    [[[6.25,6],[5,8],[0,0],[10,0],[7.5,4],[5,4]]],
+    [[[6.25,6],[7.5,4],[5,4]]],
+  ], 1e-3), 'divide')
+  t.deepEqual(rdv[0][0][0], rdv[0][0][rdv[0][0].length-1], 'divide first=last')
+  var srdv = pclip.divide(B,A,opts)
+  t.ok(peq(srdv, [
+    [[[6.25,6],[10,12],[10,4],[7.5,4]]],
+    [[[6.25,6],[7.5,4],[5,4]]],
+  ], 1e-3), 'swapped divide first=last')
+  t.deepEqual(srdv[0][0][0], srdv[0][0][srdv[0][0].length-1], 'swapped divide first=last')
+  t.end()
+})

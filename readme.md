@@ -103,6 +103,8 @@ and you can optionally provide:
   to determine if for example an edge is from the original polygon or a result of clipping.
 * `opts.epsilon` - two points are considered equal when `opts.distance(A,B) <= epsilon`.
   default: `1e-8`
+* `opts.duplicate` - when `true`, sets the last point to be the same as the first point in every
+  ring, which some formats like geojson expect. default: `false`
 
 ## pclip.union(A, B, opts)
 

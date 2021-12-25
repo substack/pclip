@@ -31,18 +31,29 @@ function clip(A, B, opts, mode) {
   out.nodes = []
   if (mode === undefined) mode = opts.mode
   calcNodes(out, A, B, opts, mode)
+  var coordinates
   if (mode === 'divide') {
-    var coordinates = []
+    coordinates = []
     clipNodes(coordinates, out, A, B, opts, 'difference')
     flipEntry(out.nodes, 0) // emulates re-marking as intersect
     for (var i = 0; i < out.nodes.length; i++) {
       out.nodes[i].visited = false
     }
     clipNodes(coordinates, out, A, B, opts, 'intersect')
-    return coordinates
   } else {
-    return clipNodes([], out, A, B, opts, mode)
+    coordinates = clipNodes([], out, A, B, opts, mode)
   }
+  if (opts.duplicate) {
+    var epsilon = opts.epsilon !== undefined ? opts.epsilon : 1e-8
+    var distance = opts.distance
+    for (var i = 0; i < coordinates.length; i++) {
+      for (var j = 0; j < coordinates[i].length; j++) {
+        var cs = coordinates[i][j]
+        if (distance(cs[0],cs[cs.length-1]) > epsilon) cs.push(cs[0])
+      }
+    }
+  }
+  return coordinates
 }
 
 function firstNodeOfInterest(nodes, start) {
