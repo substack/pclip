@@ -4,6 +4,7 @@
   "description": "pluggable polygon clipping with multipolygon and hole support: intersect, exclude, union, difference, divide",
   "dependencies": {
     "geo-point-in-polygon": "^1.0.0",
+    "geolerp": "^1.0.0",
     "gl-vec2": "^1.3.0",
     "intersect-great-circle": "^1.1.0",
     "line-segment-intersect-2d": "^1.0.0",

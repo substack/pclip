@@ -2,6 +2,7 @@ module.exports = {
   intersect: require('intersect-great-circle'),
   pointInPolygon: require('geo-point-in-polygon'),
   distance: hdist,
+  lerp: require('geolerp'),
 }
 
 function hdist(p1, p2) {
