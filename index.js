@@ -1,6 +1,8 @@
 // https://davis.wpi.edu/~matt/courses/clipping/
 
 var calcNodes = require('./lib/nodes.js')
+var mpip = require('./lib/mpip.js')
+var getDepth = require('./lib/get-depth.js')
 var mopts = {}
 var out = { nodes: [], la: 0, lb: 0 }
 
@@ -30,6 +32,22 @@ module.exports.divide = function divide(A, B, opts) {
 function clip(A, B, opts, mode) {
   out.nodes = []
   if (mode === undefined) mode = opts.mode
+  if (mode === 'exclude') {
+    var dA = getDepth(A), dB = getDepth(B)
+    var firstA = null
+    if (dA === 2) {
+      firstA = A[0]
+    } else if (dA === 3) {
+      firstA = A[0][0]
+    } else if (dA === 4) {
+      firstA = A[0][0][0]
+    }
+    if (mpip(opts.pointInPolygon, firstA, B, dB)) {
+      var X = B
+      B = A
+      A = X
+    }
+  }
   calcNodes(out, A, B, opts, mode)
   var coordinates
   if (mode === 'divide') {

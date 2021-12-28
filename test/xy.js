@@ -58,9 +58,29 @@ test('one triangle completely inside of another', function (t) {
     ],
     [[[1,1],[2,2],[3,1]]],
   ], 1e-3), 'divide')
-  t.ok(peq(pclip.divide(B,A,xy), [
+  t.end()
+})
+
+test('one triangle completely inside of another, swapped', function (t) {
+  var A = [[1,1],[2,2],[3,1]]
+  var B = [[0,0],[5,8],[10,0]]
+  t.ok(peq(pclip.intersect(A,B,xy), [
     [[[1,1],[2,2],[3,1]]],
-  ], 1e-3), 'swapped divide (empty)')
+  ]), 'intersect')
+  t.ok(peq(pclip.exclude(A,B,xy), [
+    [
+      [[0,0],[5,8],[10,0]],
+      [[1,1],[2,2],[3,1]],
+    ],
+  ]), 'exclude')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,0],[5,8],[10,0]]]
+  ]), 'union')
+  console.dir(pclip.difference(A,B,xy), { depth: null })
+  t.ok(peq(pclip.difference(A,B,xy), [], 1e-3), 'difference')
+  t.ok(peq(pclip.divide(A,B,xy), [
+    [[[1,1],[2,2],[3,1]]],
+  ], 1e-3), 'divide')
   t.end()
 })
 
