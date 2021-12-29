@@ -32,15 +32,31 @@ module.exports.divide = function divide(A, B, opts) {
 function clip(A, B, opts, mode) {
   out.nodes = []
   if (mode === undefined) mode = opts.mode
-  if (mode === 'exclude') {
+  if (mode === 'exclude') { // flip A and B if first non-shared point in A is inside B
     var dA = getDepth(A), dB = getDepth(B)
-    var firstA = null
+    var firstA = null, firstB = null
+    var distance = opts.distance, epsilon = opts.epsilon || 1e-8
+    if (dB === 2) firstB = B[0]
+    if (dB === 3) firstB = B[0][0]
+    if (dB === 4) firstB = B[0][0][0]
     if (dA === 2) {
-      firstA = A[0]
+      for (var i = 0; i < A.length; i++) {
+        var d = distance(A[i],firstB)
+        if (d > epsilon) break
+      }
+      firstA = A[i%A.length]
     } else if (dA === 3) {
-      firstA = A[0][0]
+      for (var i = 0; i < A[0].length; i++) {
+        var d = distance(A[0][i],firstB)
+        if (d > epsilon) break
+      }
+      firstA = A[0][i%A[0].length]
     } else if (dA === 4) {
-      firstA = A[0][0][0]
+      for (var i = 0; i < A[0][0].length; i++) {
+        var d = distance(A[0][0][i],firstB)
+        if (d > epsilon) break
+      }
+      firstA = A[0][0][i%A[0][0].length]
     }
     if (mpip(opts.pointInPolygon, firstA, B, dB)) {
       var X = B
