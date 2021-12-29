@@ -84,6 +84,9 @@ Each hole is formatted like a single polygon: `[[x0,y0],[x1,y1],...]`.
 Polygons and holes may, but are not required to, have a first point equal to their last point.
 Everything works the same whether or not there is a duplicate last point.
 
+Holes should not have any points outside of their containing polygon, but they may have one or more
+points on the edge of their containing polygon.
+
 You must provide:
 
 * `opts.mode` must be one of: `'union'`, `'difference'`, `'intersect'`, `'exclude'`, `'divide'`
