@@ -8,6 +8,8 @@ along great circle arcs. Or you could clip using robust or rational arithmetic.
 
 clipping based on [greiner-hormann algorithm](https://davis.wpi.edu/~matt/courses/clipping/)
 
+[experiment and compare](https://substack.net/clip.html)
+
 # example
 
 you can have simple single polygons with no holes:
