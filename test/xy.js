@@ -876,8 +876,8 @@ test('point shared between polygons', function (t) {
   ], 1e-3), 'intersect')
   t.ok(peq(pclip.difference(A,B,xy), [], 1e-3), 'difference')
   t.ok(peq(pclip.exclude(A,B,xy), [[
-    [[200,373],[200,27],[500,200],[200,373]],
-    [[500,200],[225,70],[225,330],[500,200]],
+    [[200,373],[200,27],[500,200]],
+    [[500,200],[225,70],[225,330]],
   ]], 1e-3), 'exclude')
   t.end()
 })
@@ -909,5 +909,45 @@ test('2 boxes with shared edge', function (t) {
   t.ok(peq(pclip.divide(B,A,xy), [
     [[0,2],[5,2],[5,4],[0,4]],
   ], 1e-3), 'swapped divide')
+  t.end()
+})
+
+test('box inside box with shared corner', function (t) {
+  var A = [[0,0],[0,5],[5,5],[5,0]]
+  var B = [[0,0],[0,2],[2,2],[2,0]]
+  t.ok(peq(pclip.intersect(A,B,xy), [
+    [[[0,0],[2,0],[2,2],[0,2]]],
+  ], 1e-3), 'intersect')
+  t.ok(peq(pclip.exclude(A,B,xy), [
+    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2]]],
+  ], 1e-3), 'exclude')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,0]]],
+  ], 1e-3), 'union')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2]]],
+  ], 1e-3), 'difference')
+  t.end()
+})
+
+test('box inside box with shared corner and hole', function (t) {
+  var A = [[0,0],[0,2],[2,2],[2,0]]
+  var B = [[[0,0],[0,5],[5,5],[5,0]],[[1,1],[1,1.5],[1.5,1.5],[1.5,1]]]
+  t.ok(peq(pclip.intersect(A,B,xy), [
+    [
+      [[0,2],[0,0],[2,0],[2,2]],
+      [[1,1.5],[1,1],[1.5,1],[1.5,1.5]],
+    ],
+  ], 1e-3), 'intersect')
+  t.ok(peq(pclip.exclude(A,B,xy), [
+    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2],[0,0]]],
+    [[[1,1.5],[1,1],[1.5,1],[1.5,1.5]]],
+  ], 1e-3), 'exclude')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,5],[0,0],[5,0],[5,5]]]
+  ], 1e-3), 'union')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[1,1.5],[1,1],[1.5,1],[1.5,1.5]]],
+  ], 1e-3), 'difference')
   t.end()
 })
