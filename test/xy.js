@@ -76,7 +76,6 @@ test('one triangle completely inside of another, swapped', function (t) {
   t.ok(peq(pclip.union(A,B,xy), [
     [[[0,0],[5,8],[10,0]]]
   ]), 'union')
-  console.dir(pclip.difference(A,B,xy), { depth: null })
   t.ok(peq(pclip.difference(A,B,xy), [], 1e-3), 'difference')
   t.ok(peq(pclip.divide(A,B,xy), [
     [[[1,1],[2,2],[3,1]]],
@@ -867,18 +866,48 @@ test('point intersects edge', function (t) {
 })
 
 test('point shared between polygons', function (t) {
-  var A = [[500,200],[225.00001525878906,70.09617614746094],[224.99999237060547,329.90380859375]]
-  var B = [[500,200],[199.99998474121094,373.205078125],[200.00001525878906,26.794906616210938]]
+  var A = [[500,200],[225,70],[225,330]]
+  var B = [[500,200],[200,373],[200,27]]
   t.ok(peq(pclip.union(A,B,xy), [
-    [[[200,373.205078125],[200,26.794906616210938],[500,200],[200,373.205078125]]]
+    [[[200,373],[200,27],[500,200],[200,373]]]
   ], 1e-3), 'union')
   t.ok(peq(pclip.intersect(A,B,xy), [
-    [[[224.99999237060547,329.90380859375],[225,70.09617614746094],[500,200],[225,329.90380859375]]],
+    [[[225,330],[225,70],[500,200],[225,330]]],
   ], 1e-3), 'intersect')
   t.ok(peq(pclip.difference(A,B,xy), [], 1e-3), 'difference')
   t.ok(peq(pclip.exclude(A,B,xy), [[
-    [[200,373.205078125],[200,26.794906616210938],[500,200],[200,373.205078125]],
-    [[500,200],[225,70.09617614746094],[225,329.90380859375],[500,200]],
+    [[200,373],[200,27],[500,200],[200,373]],
+    [[500,200],[225,70],[225,330],[500,200]],
   ]], 1e-3), 'exclude')
+  t.end()
+})
+
+test('2 boxes with shared edge', function (t) {
+  var A = [[0,0],[5,0],[5,2],[0,2]]
+  var B = [[0,2],[5,2],[5,4],[0,4]]
+  t.ok(peq(pclip.intersect(A,B,xy), [], 1e-3), 'intersect')
+  t.ok(peq(pclip.intersect(B,A,xy), [], 1e-3), 'flipped intersect')
+  t.ok(
+    peq(pclip.exclude(A,B,xy), [ // this one is ok
+      [[[5,2],[5,0],[0,0],[0,2]]],
+      [[[5,2],[5,4],[0,4],[0,2]]],
+    ], 1e-3)
+    || peq(pclip.union(A,B,xy), [ // this one is better
+      [[[0,0],[5,0],[5,2],[5,4],[0,4],[0,2]]],
+    ], 1e-3),
+    'exclude'
+  )
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,0],[5,0],[5,2],[5,4],[0,4],[0,2]]],
+  ], 1e-3), 'union')
+  t.ok(peq(pclip.difference(A,B,xy), [
+    [[0,0],[5,0],[5,2],[0,2]],
+  ], 1e-3), 'difference')
+  t.ok(peq(pclip.divide(A,B,xy), [
+    [[0,0],[5,0],[5,2],[0,2]],
+  ], 1e-3), 'divide')
+  t.ok(peq(pclip.divide(B,A,xy), [
+    [[0,2],[5,2],[5,4],[0,4]],
+  ], 1e-3), 'swapped divide')
   t.end()
 })
