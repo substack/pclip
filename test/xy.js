@@ -921,11 +921,13 @@ test('box inside box with shared corner', function (t) {
   t.ok(peq(pclip.exclude(A,B,xy), [
     [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xy), [
-    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,0]]],
-  ], 1e-3), 'union')
-  t.ok(peq(pclip.union(A,B,xy), [
-    [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2]]],
+  t.ok(
+    peq(pclip.union(A,B,xy), [[[[0,0],[0,5],[5,5],[5,0],[2,0]]]], 1e-3) // ok
+    || peq(pclip.union(A,B,xy), [[[[0,0],[0,2],[0,5],[5,5],[5,0],[2,0]]]], 1e-3), // preferred
+    'union'
+  )
+  t.ok(peq(pclip.difference(A,B,xy), [
+    [[[0,2],[0,5],[5,5],[5,0],[2,0],[2,2]]]
   ], 1e-3), 'difference')
   t.end()
 })
@@ -943,10 +945,11 @@ test('box inside box with shared corner and hole', function (t) {
     [[[0,0],[0,5],[5,5],[5,0],[2,0],[2,2],[0,2],[0,0]]],
     [[[1,1.5],[1,1],[1.5,1],[1.5,1.5]]],
   ], 1e-3), 'exclude')
-  t.ok(peq(pclip.union(A,B,xy), [
-    [[[0,5],[0,0],[5,0],[5,5]]]
-  ], 1e-3), 'union')
-  t.ok(peq(pclip.union(A,B,xy), [
+  t.ok(
+    peq(pclip.union(A,B,xy), [[[[0,0],[0,2],[0,5],[5,5],[5,0]]]], 1e-3),
+    'union'
+  )
+  t.ok(peq(pclip.difference(A,B,xy), [
     [[[1,1.5],[1,1],[1.5,1],[1.5,1.5]]],
   ], 1e-3), 'difference')
   t.end()

@@ -41,18 +41,21 @@ function clip(A, B, opts, mode) {
     if (dB === 4) firstB = B[0][0][0]
     if (dA === 2) {
       for (var i = 0; i < A.length; i++) {
+        if (A[i].intersect) continue
         var d = distance(A[i],firstB)
         if (d > epsilon) break
       }
       firstA = A[i%A.length]
     } else if (dA === 3) {
       for (var i = 0; i < A[0].length; i++) {
+        if (A[0][i].intersect) continue
         var d = distance(A[0][i],firstB)
         if (d > epsilon) break
       }
       firstA = A[0][i%A[0].length]
     } else if (dA === 4) {
       for (var i = 0; i < A[0][0].length; i++) {
+        if (A[0][0][i].intersect) continue
         var d = distance(A[0][0][i],firstB)
         if (d > epsilon) break
       }
@@ -164,14 +167,23 @@ function walk(pip, coordinates, out, start, get, mode, epsilon, distance) {
       visitLoop(nodes, index)
       continue
     }
-    var ring = []
+    var ring = [], prev = null, previ = -1
     for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
         n.visited = true
-        ring.push(get(nodes,i))
-        i = fwd ? n.next : n.prev
-        n = nodes[i]
+        var ni = fwd ? n.next : n.prev
+        var nn = nodes[ni]
+        var dup = !(!prev || !(distance(prev.point, n.point) < epsilon))
+        var last = nn.intersect && nodes[nn.neighbor].visited
+        if (prev && !dup && last && distance(n.point, nn.point) < epsilon) {
+          dup = true
+        }
+        if (!dup) ring.push(get(nodes,i))
+        prev = n
+        previ = i
+        i = ni
+        n = nn
         if (n.intersect) {
           n.visited = true
           break
