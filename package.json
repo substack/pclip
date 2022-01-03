@@ -1,6 +1,6 @@
 {
   "name": "pclip",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "pluggable polygon clipping with multipolygon and hole support: intersect, exclude, union, difference, divide",
   "dependencies": {
     "geo-point-in-polygon": "^1.0.0",
