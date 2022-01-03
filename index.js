@@ -239,30 +239,21 @@ function ringInsideRings(pip, ring, P, epsilon, distance) {
 function trimRing(ring, opts) { // remove middles from spans of 3+ collinear points
   var epsilon = opts.epsilon || defaultEpsilon
   var distance = opts.distance
-  var collinear = opts.collinear
   var remove = null
   var n = ring.length
-  if (collinear) {
-    for (var i = 0; i < n; i++) {
-      var a = ring[(i+n-1)%n], b = ring[i], c = ring[(i+1)%n]
-      if (!collinear(a,b,c)) continue
+  for (var i = 0; i < n; i++) {
+    var a = ring[(i+n-1)%n], b = ring[i], c = ring[(i+1)%n]
+    var dab = distance(a,b)
+    var dbc = distance(b,c)
+    var dac = distance(a,c)
+    var rm = dac > epsilon && (false
+      //|| Math.abs(dac - dab - dbc) < epsilon
+      || Math.abs(dbc-dab-dac) < epsilon
+      || Math.abs(dab-dac-dbc) < epsilon
+    )
+    if (rm) { // cuts off zero-area areas
       if (remove) remove.push(i)
       else remove = [i]
-    }
-  } else {
-    for (var i = 0; i < n; i++) {
-      var a = ring[(i+n-1)%n], b = ring[i], c = ring[(i+1)%n]
-      var dab = distance(a,b)
-      var dbc = distance(b,c)
-      var dac = distance(a,c)
-      var rm = false // cut off zero-area ears only
-        //|| Math.abs(dac - dab - dbc) < epsilon
-        || Math.abs(dbc - dab - dac) < epsilon
-        || Math.abs(dab - dac - dbc) < epsilon
-      if (rm) {
-        if (remove) remove.push(i)
-        else remove = [i]
-      }
     }
   }
   if (remove) {
