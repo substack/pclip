@@ -71,13 +71,14 @@ function clip(A, B, opts, mode) {
   calcNodes(out, A, B, opts, mode)
   var coordinates
   if (mode === 'divide') {
-    coordinates = []
-    clipNodes(coordinates, out, A, B, opts, 'difference')
+    var coords0 = [], coords1 = []
+    clipNodes(coords0, out, A, B, opts, 'difference')
     flipEntry(out.nodes, 0) // emulates re-marking as intersect
     for (var i = 0; i < out.nodes.length; i++) {
       out.nodes[i].visited = false
     }
-    clipNodes(coordinates, out, A, B, opts, 'intersect')
+    clipNodes(coords1, out, A, B, opts, 'intersect')
+    coordinates = coords0.concat(coords1)
   } else {
     coordinates = clipNodes([], out, A, B, opts, mode)
   }
@@ -171,6 +172,7 @@ function walk(pip, coordinates, out, start, mode, opts) {
       continue
     }
     var ring = [], prev = null, previ = -1
+    var ringFirst = -1
     for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
@@ -182,7 +184,10 @@ function walk(pip, coordinates, out, start, mode, opts) {
         if (prev && !dup && last && distance(n.point, nn.point) < epsilon) {
           dup = true
         }
-        if (!dup) ring.push(get(nodes,i))
+        if (!dup) {
+          if (ringFirst < 0 && !n.intersect) ringFirst = ring.length
+          ring.push(get(nodes,i))
+        }
         prev = n
         previ = i
         i = ni
@@ -196,7 +201,7 @@ function walk(pip, coordinates, out, start, mode, opts) {
     trimRing(ring, opts)
     if (ring.length < 3) continue // if for some reason...
     for (var i = 0; i < coordinates.length; i++) {
-      if (ringInsideRings(pip, ring, coordinates[i], epsilon, distance)) {
+      if (ringInsideRings(pip, ringFirst, ring, coordinates[i], epsilon, distance)) {
         coordinates[i].push(ring)
         break
       }
@@ -216,19 +221,8 @@ function visitLoop(nodes, index) {
   } while (i !== index)
 }
 
-function ringInsideRings(pip, ring, P, epsilon, distance) {
-  // find first point in ring not equal to any point in P
-  for (var i = 0; i < ring.length; i++) {
-    J: for (var j = 0; j < P.length; j++) {
-      for (var k = 0; k < P[j].length; k++) {
-        if (distance(ring[i],P[j][k]) <= epsilon) {
-          break J
-        }
-      }
-    }
-    if (j === P.length) break
-  }
-  if (i === ring.length) return false // same ring
+function ringInsideRings(pip, i, ring, P, epsilon, distance) {
+  if (i < 0 || i === ring.length) return false // same ring
   if (!pip(ring[i], P[0])) return false
   for (var j = 1; j < P.length; j++) {
     if (pip(ring[i],P[j])) return false
