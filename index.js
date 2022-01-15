@@ -165,7 +165,6 @@ function walk(out, start, mode, opts) {
         }
       }
     }
-    trimRing(ring, opts)
     if (ring.length < 3) continue // if for some reason...
     out.rings.push(ring)
     out.firsts.push(ringFirst)
@@ -224,31 +223,4 @@ function visitLoop(nodes, index) {
     n = nodes[i]
     n.visited = true
   } while (i !== index)
-}
-
-function trimRing(ring, opts) { // remove middles from spans of 3+ collinear points
-  var epsilon = opts.epsilon || defaultEpsilon
-  var distance = opts.distance
-  var remove = null
-  var n = ring.length
-  for (var i = 0; i < n; i++) {
-    var a = ring[(i+n-1)%n], b = ring[i], c = ring[(i+1)%n]
-    var dab = distance(a,b)
-    var dbc = distance(b,c)
-    var dac = distance(a,c)
-    var rm = dac > epsilon && (false
-      //|| Math.abs(dac - dab - dbc) < epsilon
-      || Math.abs(dbc-dab-dac) < epsilon
-      || Math.abs(dab-dac-dbc) < epsilon
-    )
-    if (rm) { // cuts off zero-area areas
-      if (remove) remove.push(i)
-      else remove = [i]
-    }
-  }
-  if (remove) {
-    for (var i = 0; i < remove.length; i++) {
-      ring.splice(i,1)
-    }
-  }
 }
