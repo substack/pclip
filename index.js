@@ -4,7 +4,7 @@ var calcNodes = require('./lib/nodes.js')
 var mpip = require('./lib/mpip.js')
 var getDepth = require('./lib/get-depth.js')
 var mopts = {}
-var out = { nodes: [], la: 0, lb: 0 }
+var out = { nodes: null, coordinates: null, rings: null, firsts: null, la: 0, lb: 0 }
 var defaultEpsilon = 1e-8
 
 module.exports = clip
@@ -32,67 +32,37 @@ module.exports.divide = function divide(A, B, opts) {
 
 function clip(A, B, opts, mode) {
   out.nodes = []
+  out.coordinates = []
+  out.rings = []
+  out.firsts = []
   if (mode === undefined) mode = opts.mode
-  if (mode === 'exclude') { // flip A and B if first non-shared point in A is inside B
-    var dA = getDepth(A), dB = getDepth(B)
-    var firstA = null, firstB = null
-    var distance = opts.distance, epsilon = opts.epsilon || defaultEpsilon
-    if (dB === 2) firstB = B[0]
-    if (dB === 3) firstB = B[0][0]
-    if (dB === 4) firstB = B[0][0][0]
-    if (dA === 2) {
-      for (var i = 0; i < A.length; i++) {
-        if (A[i].intersect) continue
-        var d = distance(A[i],firstB)
-        if (d > epsilon) break
-      }
-      firstA = A[i%A.length]
-    } else if (dA === 3) {
-      for (var i = 0; i < A[0].length; i++) {
-        if (A[0][i].intersect) continue
-        var d = distance(A[0][i],firstB)
-        if (d > epsilon) break
-      }
-      firstA = A[0][i%A[0].length]
-    } else if (dA === 4) {
-      for (var i = 0; i < A[0][0].length; i++) {
-        if (A[0][0][i].intersect) continue
-        var d = distance(A[0][0][i],firstB)
-        if (d > epsilon) break
-      }
-      firstA = A[0][0][i%A[0][0].length]
-    }
-    if (mpip(opts.pointInPolygon, firstA, B, dB)) {
-      var X = B
-      B = A
-      A = X
-    }
-  }
   calcNodes(out, A, B, opts, mode)
-  var coordinates
   if (mode === 'divide') {
-    var coords0 = [], coords1 = []
-    clipNodes(coords0, out, A, B, opts, 'difference')
+    clipNodes(out, A, B, opts, 'difference')
+    nestRings(out, opts)
     flipEntry(out.nodes, 0) // emulates re-marking as intersect
     for (var i = 0; i < out.nodes.length; i++) {
       out.nodes[i].visited = false
     }
-    clipNodes(coords1, out, A, B, opts, 'intersect')
-    coordinates = coords0.concat(coords1)
+    out.rings = []
+    out.firsts = []
+    clipNodes(out, A, B, opts, 'intersect')
+    nestRings(out, opts)
   } else {
-    coordinates = clipNodes([], out, A, B, opts, mode)
+    clipNodes(out, A, B, opts, mode)
+    nestRings(out, opts)
   }
   if (opts.duplicate) {
     var epsilon = opts.epsilon !== undefined ? opts.epsilon : defaultEpsilon
     var distance = opts.distance
-    for (var i = 0; i < coordinates.length; i++) {
-      for (var j = 0; j < coordinates[i].length; j++) {
-        var cs = coordinates[i][j]
+    for (var i = 0; i < out.coordinates.length; i++) {
+      for (var j = 0; j < out.coordinates[i].length; j++) {
+        var cs = out.coordinates[i][j]
         if (distance(cs[0],cs[cs.length-1]) > epsilon) cs.push(cs[0])
       }
     }
   }
-  return coordinates
+  return out.coordinates
 }
 
 function firstNodeOfInterest(nodes, start) {
@@ -111,22 +81,18 @@ function firstNodeOfInterest(nodes, start) {
   return -1
 }
 
-function clipNodes(coordinates, out, A, B, opts, mode) {
-  var nodes = out.nodes
+function clipNodes(out, A, B, opts, mode) {
   if (mode === undefined) mode = opts.mode
-  var epsilon = opts.epsilon !== undefined ? opts.epsilon : defaultEpsilon
-  var la = out.la, lb = out.lb
-  var pip = opts.pointInPolygon
-  walk(pip, coordinates, out, 0, mode, opts)
+  walk(out, 0, mode, opts)
   if (mode === 'exclude') {
-    for (var i = 0; i < nodes.length; i++) {
-      var n = nodes[i]
+    for (var i = 0; i < out.nodes.length; i++) {
+      var n = out.nodes[i]
       n.visited = false
       if (n.intersect) n.entry = !n.entry
     }
   }
-  walk(pip, coordinates, out, la, mode, opts)
-  return coordinates
+  walk(out, out.la, mode, opts)
+  return out.coordinates
 }
 
 function flipEntry(nodes, start) {
@@ -147,7 +113,8 @@ function getPoint(nodes,i) {
   return nodes[i].point
 }
 
-function walk(pip, coordinates, out, start, mode, opts) {
+function walk(out, start, mode, opts) {
+  var rings = [], firsts = []
   var get = opts.get || getPoint
   var epsilon = opts.epsilon || defaultEpsilon
   var distance = opts.distance
@@ -200,13 +167,51 @@ function walk(pip, coordinates, out, start, mode, opts) {
     }
     trimRing(ring, opts)
     if (ring.length < 3) continue // if for some reason...
-    for (var i = 0; i < coordinates.length; i++) {
-      if (ringInsideRings(pip, ringFirst, ring, coordinates[i], epsilon, distance)) {
-        coordinates[i].push(ring)
-        break
+    out.rings.push(ring)
+    out.firsts.push(ringFirst)
+  }
+}
+
+function nestRings(out, opts) {
+  var pip = opts.pointInPolygon
+  var epsilon = opts.epsilon || defaultEpsilon
+  var distance = opts.distance
+  var counts = Array(out.rings.length).fill(0)
+  var inside = Array(out.rings.length)
+  for (var i = 0; i < out.rings.length; i++) {
+    for (var j = 0; j < out.rings.length; j++) {
+      if (i === j) continue
+      if (pip(out.rings[i][out.firsts[i]], out.rings[j])) {
+        counts[i]++
+        if (inside[i] === undefined) {
+          inside[i] = [j]
+        } else {
+          inside[i].push(j)
+        }
       }
     }
-    if (i === coordinates.length) coordinates.push([ring])
+  }
+  var top = {}
+  for (var i = 0; i < out.rings.length; i++) {
+    if (counts[i]%2 === 0) { // not hole
+      top[i] = out.coordinates.length
+      out.coordinates.push([out.rings[i]])
+    }
+  }
+  for (var i = 0; i < out.rings.length; i++) {
+    if (counts[i]%2 === 1) { // hole
+      if (!inside[i]) continue // <-- shouldn't happen but who knows
+      var highest = -1, ih = -1
+      for (var j = 0; j < inside[i].length; j++) {
+        var k = inside[i][j]
+        if (counts[k]%2 === 0 && counts[k] > highest) {
+          highest = counts[k]
+          ih = k
+        }
+      }
+      if (ih >= 0) out.coordinates[top[ih]].push(out.rings[i])
+      else out.coordinates.push([out.rings[i]])
+    }
   }
 }
 
@@ -219,15 +224,6 @@ function visitLoop(nodes, index) {
     n = nodes[i]
     n.visited = true
   } while (i !== index)
-}
-
-function ringInsideRings(pip, i, ring, P, epsilon, distance) {
-  if (i < 0 || i === ring.length) return false // same ring
-  if (!pip(ring[i], P[0])) return false
-  for (var j = 1; j < P.length; j++) {
-    if (pip(ring[i],P[j])) return false
-  }
-  return true
 }
 
 function trimRing(ring, opts) { // remove middles from spans of 3+ collinear points
