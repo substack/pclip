@@ -4,7 +4,7 @@ var calcNodes = require('./lib/nodes.js')
 var mpip = require('./lib/mpip.js')
 var getDepth = require('./lib/get-depth.js')
 var mopts = {}
-var out = { nodes: null, coordinates: null, rings: null, firsts: null, la: 0, lb: 0 }
+var out = { nodes: null, coordinates: null, rings: null, la: 0, lb: 0 }
 var defaultEpsilon = 1e-8
 
 module.exports = clip
@@ -34,7 +34,6 @@ function clip(A, B, opts, mode) {
   out.nodes = []
   out.coordinates = []
   out.rings = []
-  out.firsts = []
   if (mode === undefined) mode = opts.mode
   calcNodes(out, A, B, opts, mode)
   if (mode === 'divide') {
@@ -45,7 +44,6 @@ function clip(A, B, opts, mode) {
       out.nodes[i].visited = false
     }
     out.rings = []
-    out.firsts = []
     clipNodes(out, A, B, opts, 'intersect')
     nestRings(out, opts)
   } else {
@@ -114,7 +112,7 @@ function getPoint(nodes,i) {
 }
 
 function walk(out, start, mode, opts) {
-  var rings = [], firsts = []
+  var rings = []
   var get = opts.get || getPoint
   var epsilon = opts.epsilon || defaultEpsilon
   var distance = opts.distance
@@ -139,7 +137,6 @@ function walk(out, start, mode, opts) {
       continue
     }
     var ring = [], prev = null, previ = -1
-    var ringFirst = -1
     for (var i = index; i >= 0 && !n.visited; i = n.neighbor, n = nodes[i]) {
       var fwd = n.entry
       while (!n.visited) {
@@ -152,7 +149,6 @@ function walk(out, start, mode, opts) {
           dup = true
         }
         if (!dup) {
-          if (ringFirst < 0 && !n.intersect) ringFirst = ring.length
           ring.push(get(nodes,i))
         }
         prev = n
@@ -167,7 +163,6 @@ function walk(out, start, mode, opts) {
     }
     if (ring.length < 3) continue // if for some reason...
     out.rings.push(ring)
-    out.firsts.push(ringFirst)
   }
 }
 
@@ -178,10 +173,10 @@ function nestRings(out, opts) {
   var counts = Array(out.rings.length).fill(0)
   var inside = Array(out.rings.length)
   for (var i = 0; i < out.rings.length; i++) {
-    if (out.firsts[i] < 0) continue
     for (var j = 0; j < out.rings.length; j++) {
       if (i === j) continue
-      if (pip(out.rings[i][out.firsts[i]], out.rings[j])) {
+      var k = getRingFirst(out.rings[i], out.rings[j], opts)
+      if (k < 0 || pip(out.rings[i][k], out.rings[j])) {
         counts[i]++
         if (inside[i] === undefined) {
           inside[i] = [j]
@@ -224,4 +219,16 @@ function visitLoop(nodes, index) {
     n = nodes[i]
     n.visited = true
   } while (i !== index)
+}
+
+function getRingFirst(a, b, opts) {
+  var epsilon = opts.epsilon || defaultEpsilon
+  var distance = opts.distance
+  for (var i = 0; i < a.length; i++) {
+    for (var j = 0; j < b.length; j++) {
+      if (distance(a[i],b[j]) < epsilon) break
+    }
+    if (j === b.length) return i
+  }
+  return -1
 }
