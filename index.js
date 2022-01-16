@@ -178,6 +178,7 @@ function nestRings(out, opts) {
   var counts = Array(out.rings.length).fill(0)
   var inside = Array(out.rings.length)
   for (var i = 0; i < out.rings.length; i++) {
+    if (out.firsts[i] < 0) continue
     for (var j = 0; j < out.rings.length; j++) {
       if (i === j) continue
       if (pip(out.rings[i][out.firsts[i]], out.rings[j])) {
