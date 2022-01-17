@@ -116,7 +116,7 @@ function walk(out, start, mode, opts) {
   var get = opts.get || getPoint
   var epsilon = opts.epsilon || defaultEpsilon
   var distance = opts.distance
-  var dot = opts.dot
+  var area = opts.area
   var index = start
   var nodes = out.nodes
   while (true) {
@@ -162,7 +162,9 @@ function walk(out, start, mode, opts) {
       }
     }
     if (ring.length < 3) continue // if for some reason...
-    out.rings.push(ring)
+    if (!area || !(Math.abs(area(ring)) < epsilon)) {
+      out.rings.push(ring)
+    }
   }
 }
 
