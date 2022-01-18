@@ -1018,3 +1018,26 @@ test('zero-area ear', function (t) {
   ], 1e-3), 'difference')
   t.end()
 })
+
+test('2 boxes with edge inside edge', function (t) {
+  var A = [[0,0],[0,5],[5,5],[5,0]]
+  var B = [[0,1],[-1,1],[-1,2],[0,2]]
+  t.ok(peq(pclip.intersect(A,B,xy), [], 1e-3), 'intersect')
+  t.ok(
+    peq(pclip.exclude(A,B,xy), [ // ok
+      [[[0,1],[0,0],[5,0],[5,5],[0,5],[0,2]]],
+      [[[0,2],[-1,2],[-1,1],[0,1]]]
+    ], 1e-3)
+    || peq(pclip.exclude(A,B,xy), [ // best
+      [[[0,1],[0,0],[5,0],[5,5],[0,5],[0,2],[-1,2],[-1,1]]]
+    ], 1e-3),
+    'exclude'
+  )
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[0,1],[0,0],[5,0],[5,5],[0,5],[0,2],[-1,2],[-1,1]]]
+  ], 1e-3), 'union')
+  t.ok(peq(pclip.difference(A,B,xy), [
+    [[[0,1],[0,0],[5,0],[5,5],[0,5],[0,2]]]
+  ], 1e-3), 'difference')
+  t.end()
+})
