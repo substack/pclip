@@ -1,8 +1,6 @@
 // https://davis.wpi.edu/~matt/courses/clipping/
 
 var calcNodes = require('./lib/nodes.js')
-var mpip = require('./lib/mpip.js')
-var getDepth = require('./lib/get-depth.js')
 var mopts = {}
 var out = { nodes: null, coordinates: null, rings: null, la: 0, lb: 0 }
 var defaultEpsilon = 1e-8
