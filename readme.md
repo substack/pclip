@@ -106,6 +106,8 @@ and you can optionally provide:
 * `opts.lerp(out, A, B, t)` - interpolate point `A` to point `B` by parameter `t` (0 to 1),
   storing the result in `out`. providing this helps the algorithm to do a pointInPolygon check for
   existing points that lie on lines of the opposite polygon
+* `opts.area(polygon)` - calculate the area of a polygon provided as an array of 2-item arrays.
+  providing an area function will cull zero-area polygons from the result.
 * `opts.get(nodes,i)` - map the array of nodes and the node inex to the result type.
   by default, this is `nodes[i].point` but you can supply extra information here such as the index
   to determine if for example an edge is from the original polygon or a result of clipping.
