@@ -23,7 +23,6 @@ function geoArea(p) {
     az(az1, p[(i+1)%n])
     var daz = ((az1[1] - az0[1]) + Math.PI) % (2*Math.PI) - Math.PI
     var colat = az0[0]+(az1[0]-az0[0])/2
-    console.log(colat, Math.cos(colat), daz)
     s += (1-Math.cos(colat))*daz
   }
   var area = Math.abs(s)/(4*Math.PI)
