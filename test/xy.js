@@ -1105,3 +1105,22 @@ test('triangle cuts box on triangle vertex', function (t) {
   ], 1e-3), 'divide')
   t.end()
 })
+
+test('pentagon on top right corner', function (t) {
+  var A = [[90,58],[180,32],[270,58],[270,90],[90,90]]
+  var B = [[-180,-90],[-180,90],[180,90],[180,-90]]
+  t.ok(peq(pclip.intersect(A,B,xy), [
+    [[[90,58],[180,32],[180,90],[90,90],[90,58]]],
+  ], 1e-3), 'intersect')
+  t.ok(peq(pclip.exclude(A,B,xy), [ // ok
+    [[[-180,-90],[180,-90],[180,32],[90,58],[90,90],[-180,90],[-180,-90]]],
+    [[[180,32],[270,58],[270,90],[180,90],[180,32]]],
+  ], 1e-3), 'exclude')
+  t.ok(peq(pclip.union(A,B,xy), [
+    [[[-180,-90],[180,-90],[180,32],[270,58],[270,90],[-180,90],[-180,-90]]],
+  ], 1e-3), 'union')
+  t.ok(peq(pclip.difference(A,B,xy), [
+    [[[180,32],[270,58],[270,90],[180,90],[180,32]]],
+  ], 1e-3), 'difference')
+  t.end()
+})
