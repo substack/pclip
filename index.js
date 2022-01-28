@@ -160,6 +160,14 @@ function walk(out, start, mode, opts) {
       }
     }
     if (ring.length < 3) continue // if for some reason...
+    for (var i = 0; i < ring.length; i++) {
+      var a = ring[i]
+      var b = ring[(i+2)%ring.length]
+      if (Math.abs(distance(a,b)) < epsilon) {
+        ring.splice(i+1,2)
+      }
+    }
+    if (ring.length < 3) continue // if for some reason...
     if (!area || !(Math.abs(area(ring)) < epsilon)) {
       out.rings.push(ring)
     }
