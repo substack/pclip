@@ -3,5 +3,5 @@ module.exports = {
   pointInPolygon: require('point-in-polygon'),
   distance: require('gl-vec2/distance'),
   lerp: require('gl-vec2/lerp'),
-  area: require('2d-polygon-area'),
+  area: require('2d-polygon-area'), // deprecated
 }

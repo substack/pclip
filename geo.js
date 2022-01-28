@@ -5,7 +5,7 @@ module.exports = {
   pointInPolygon: require('geo-point-in-polygon'),
   distance: hdist,
   lerp: require('geolerp'),
-  area: geoArea,
+  area: geoArea, // deprecated
 }
 
 function hdist(p1, p2) {

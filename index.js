@@ -168,9 +168,7 @@ function walk(out, start, mode, opts) {
       }
     }
     if (ring.length < 3) continue // if for some reason...
-    if (!area || !(Math.abs(area(ring)) < epsilon)) {
-      out.rings.push(ring)
-    }
+    out.rings.push(ring)
   }
 }
 
