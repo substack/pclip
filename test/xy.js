@@ -1156,6 +1156,31 @@ test('pentagon on bottom right corner', function (t) {
   t.end()
 })
 
+test('pentagon on bottom right corner with different order', function (t) {
+  var A = [[270,-58],[180,-32],[90,-58],[90,-90],[270,-90]]
+  var B = [[-180,-90],[-180,90],[180,90],[180,-90]]
+  t.ok(peq(pclip.intersect(A,B,xy), [
+    [[[180,-32],[90,-58],[90,-90],[180,-90]]]
+  ], 1e-3), 'intersect')
+  t.ok(peq(pclip.exclude(A,B,xy), [
+    [[[-180,-90],[90,-90],[90,-58],[180,-32],[180,90],[-180,90],[-180,-90]]],
+    [[[180,-90],[270,-90],[270,-58],[180,-32],[180,-90]]]
+  ], 1e-3), 'exclude')
+  t.ok(
+    peq(pclip.union(A,B,xy), [
+      [[[-180,-90],[270,-90],[270,-58],[180,-32],[180,90],[-180,90],[-180,-90]]]
+    ], 1e-3)
+    || peq(pclip.union(A,B,xy), [
+      [[[180,-32],[270,-58],[270,-90],[180,-90],[90,-90],[-180,-90],[-180,90],[180,90]]]
+    ], 1e-3),
+    'union'
+  )
+  t.ok(peq(pclip.difference(A,B,xy), [
+    [[[180,-90],[270,-90],[270,-58],[180,-32],[180,-90]]]
+  ], 1e-3), 'difference')
+  t.end()
+})
+
 test('offset box on bottom right corner edge', function (t) {
   var A = [[212,-54],[148,-54],[148,-90],[212,-90]]
   var B = [[-180,-90],[-180,90],[180,90],[180,-90]]
